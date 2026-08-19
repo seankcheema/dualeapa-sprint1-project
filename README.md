@@ -1,5 +1,14 @@
 # Sprint 1 Project
-_Team: Sean Cheema (PM), Chris Chang, Soli Ateefa, Prisca Olose, Mohammed Shaoib_
+
+## Team
+
+| Name | Role |
+| ----- | ----- |
+| Sean Cheema | Team Lead/Front End Developer |
+| Chris Chang | Full Stack Engineer |
+| Soli Ateefa | Data Engineer |
+| Prisca Olose | Full Stack/Security |
+| Mohammed Shaoib | Full Stack Engineer |
 
 ## Project Topic
 
