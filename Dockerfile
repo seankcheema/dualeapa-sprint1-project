@@ -1,18 +1,10 @@
-### Sprint 1 Greeter App Dockerfile
-### Multi-stage build for a small, secure Java runtime image
+FROM maven:3.9-eclipse-temurin-21 AS build
 
-FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
-
-# Copy pom first for better dependency layer caching.
-COPY pom.xml ./
-RUN mvn -q -DskipTests dependency:go-offline
-
-# Copy sources and build executable jar.
+COPY pom.xml .
 COPY src ./src
-RUN mvn -q -DskipTests clean package
-
+RUN mvn -B package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine AS runtime
 
