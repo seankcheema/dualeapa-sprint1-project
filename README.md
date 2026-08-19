@@ -11,6 +11,7 @@
 | Mohammed Shaoib | Full Stack Engineer |
 
 ## Project Topic
+TBD
 
 ## Branching Strategy
 Our branching strategy is trunking
