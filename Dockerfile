@@ -1,9 +1,28 @@
-FROM mcr.microsoft.com/mssql/server:2022-latest
+### Sprint 1 Greeter App Dockerfile
+### Multi-stage build for a small, secure Java runtime image
 
-ENV ACCEPT_EULA=Y
-ENV SA_PASSWORD=Password!
-ENV MSSQL_PID=Developer
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
-COPY init.sql /init.sql
+WORKDIR /app
 
-CMD /bin/bash -c "/opt/mssql/bin/sqlservr & sleep 30 && /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P YourStrong!Passw0rd -i /init.sql && wait"
+# Copy pom first for better dependency layer caching.
+COPY pom.xml ./
+RUN mvn -q -DskipTests dependency:go-offline
+
+# Copy sources and build executable jar.
+COPY src ./src
+RUN mvn -q -DskipTests clean package
+
+
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+WORKDIR /app
+
+# Run as a non-root user for better container security.
+RUN addgroup -S app && adduser -S app -G app
+
+COPY --from=build /app/target/sprint1-greeter-app.jar /app/app.jar
+
+USER app
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
