@@ -1,8 +1,15 @@
 pipeline {
     agent any
+    
     tools {
         maven 'Maven3'
     }
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 1, unit: 'HOURS')
+    }
+    
     stages {
         stage('Checkout') {
             steps {
@@ -29,6 +36,18 @@ pipeline {
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
+        }
+    }
+    
+    post {
+        always {
+            echo "Pipeline Status: ${currentBuild.result}"
+        }
+        success {
+            echo '✓ Build SUCCESS - Notifying team...'
+        }
+        failure {
+            echo '✗ Build FAILED - Check logs and notify team!'
         }
     }
 }
