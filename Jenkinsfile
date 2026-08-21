@@ -20,7 +20,12 @@ pipeline {
             }
             post {
                 always {
-                    junit 'target/surefire-reports/*.xml'
+                    script {
+                        def testFiles = findFiles(glob: 'target/surefire-reports/*.xml')
+                        if (testFiles.size() > 0) {
+                            junit 'target/surefire-reports/*.xml'
+                        }
+                    }
                 }
             }
         }
