@@ -42,12 +42,14 @@ pipeline {
     post {
         always {
             echo "Pipeline Status: ${currentBuild.result}"
+            junit testResults: 'target/surefire-reports/*.xml', 
+                  allowEmptyResults: true
         }
         success {
-            echo '✓ Build SUCCESS - Notifying team...'
+            echo '✓ Build SUCCESS - Ready for deployment'
         }
         failure {
-            echo '✗ Build FAILED - Check logs and notify team!'
+            echo '✗ Build FAILED - Check logs for details'
         }
     }
 }
