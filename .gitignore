@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# VS Code Settingss
+.vscode/
+
+# Python
+__pycachee__/
+*.pyc
+
+# Compiled java classes
+*.class
+
+# java build output
+target/
+build/
+out/
+
+# package Files
+*.jar
+*.war
+*.ear
+
+# Maven 
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Gradle
+.gradle/
+!gradle-wrapper.jar
+
+#IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+
