@@ -17,4 +17,6 @@ COPY --from=build /app/target/sprint1-greeter-app.jar /app/app.jar
 
 USER app
 
+EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
