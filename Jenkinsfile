@@ -37,10 +37,27 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
+        stage('Docker Build (Multistage)') {
+            steps {
+                sh 'docker build -t team-skeleton:multistage .'
+            }
+        }
+        stage('Docker Compose Up') {
+            steps {
+                sh 'docker compose up -d'
+                sh 'docker compose ps'
+            }
+        }
+        stage('Docker Compose Down') {
+            steps {
+                sh 'docker compose down'
+            }
+        }
     }
     
     post {
         always {
+            sh 'docker compose down || true'
             echo "Pipeline Status: ${currentBuild.result}"
             junit testResults: 'target/surefire-reports/*.xml', 
                   allowEmptyResults: true
