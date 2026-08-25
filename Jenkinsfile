@@ -44,20 +44,20 @@ pipeline {
         }
         stage('Docker Compose Up') {
             steps {
-                sh 'docker compose up -d'
-                sh 'docker compose ps'
+                sh 'docker-compose up -d'
+                sh 'docker-compose ps'
             }
         }
         stage('Docker Compose Down') {
             steps {
-                sh 'docker compose down'
+                sh 'docker-compose down'
             }
         }
     }
     
     post {
         always {
-            sh 'docker compose down || true'
+            sh 'docker-compose down || true'
             echo "Pipeline Status: ${currentBuild.result}"
             junit testResults: 'target/surefire-reports/*.xml', 
                   allowEmptyResults: true
