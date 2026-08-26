@@ -11,7 +11,7 @@
 | Mohammed Shaoib | Full Stack Engineer |
 
 ## Project Topic
-TBD
+Trading platform called Trading Season
 
 ## Branching Strategy
 Our branching strategy is trunking
