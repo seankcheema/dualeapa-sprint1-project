@@ -86,7 +86,7 @@ erDiagram
     }
 
     STOCKS {
-        int instrument_id PK_FK
+        int instrument_id PK, FK
         text company_name
         numeric starting_price
         text sector
@@ -182,7 +182,7 @@ erDiagram
 
     FILLS {
         int fill_id PK
-        int order_id FK_UK "1:1 with orders"
+        int order_id FK, UK "1:1 with orders"
         numeric quote_price
         numeric quantity
         timestamptz filled_at
@@ -191,7 +191,7 @@ erDiagram
     CASH_TRANSACTIONS {
         int cash_transaction_id PK
         int account_id FK
-        int fill_id FK_UK "null for deposit/withdrawal"
+        int fill_id FK, UK "null for deposit/withdrawal"
         numeric amount "financial, signed"
         text reason "ORDER_FILL/DEPOSIT/WITHDRAWAL"
         timestamptz created_at
@@ -201,7 +201,7 @@ erDiagram
         int holding_movement_id PK
         int account_id FK
         int instrument_id FK
-        int fill_id FK_UK "1:1 with fills"
+        int fill_id FK, UK "1:1 with fills"
         numeric quantity_delta "financial, signed"
         timestamptz created_at
     }
