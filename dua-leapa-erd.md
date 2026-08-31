@@ -24,222 +24,198 @@ table, its columns, key attributes, and how tables relate.
 
 Column tags/sensitivity labels follow the legend above; enum values and long-form notes live in [dua-leapa-schema.sql](./dua-leapa-schema.sql) comments, not repeated here to keep this compact.
 
-```plantuml
-@startuml
-hide circle
-hide empty members
-skinparam linetype ortho
-skinparam padding 1
-skinparam classFontSize 11
-skinparam classAttributeFontSize 10
-skinparam shadowing false
+```mermaid
+%%{init: {"themeVariables": {"fontSize": "22px"}}}%%
+erDiagram
+    USERS ||--o{ SESSIONS : has
+    USERS ||--o{ ACCOUNTS : owns
+    ACCOUNTS ||--o{ ORDERS : places
+    ACCOUNTS ||--o{ HOLDINGS : holds
+    ACCOUNTS ||--o{ CASH_TRANSACTIONS : records
+    ACCOUNTS ||--o{ HOLDING_MOVEMENTS : records
+    INSTRUMENTS ||--o| STOCKS : "sim data"
+    INSTRUMENTS ||--o{ PRICE_POINTS : generates
+    INSTRUMENTS ||--o{ MARKET_TICKS : generates
+    INSTRUMENTS ||--o{ QUOTES : generates
+    INSTRUMENTS ||--o{ CANDLES : generates
+    INSTRUMENTS ||--o{ MARKET_STATE : has
+    INSTRUMENTS ||--o{ HOLDINGS : "held as"
+    INSTRUMENTS ||--o{ ORDERS : "traded in"
+    INSTRUMENTS ||--o{ HOLDING_MOVEMENTS : moves
+    ORDERS ||--o| FILLS : "executes as"
+    ORDERS ||--o{ AUDIT_TRAIL : logs
+    FILLS ||--o| CASH_TRANSACTIONS : produces
+    FILLS ||--|| HOLDING_MOVEMENTS : produces
 
-entity USERS {
-  *user_id : uuid <<PK>>
-  --
-  username : text <<UK>>
-  password_hash : text <<secret>>
-  email : text <<UK>>
-  ssn : text <<PII>>
-  date_of_birth : date <<PII>>
-  trader_level : text
-  available_funds : numeric <<financial>>
-  user_role : text
-  account_status : text
-  session_timeout_minutes : int
-  execution_buffer_percent : numeric
-  failed_login_attempts : int <<internal>>
-  locked_until : timestamptz <<internal>>
-  reset_token : text <<secret>>
-  reset_token_expires_at : timestamptz <<internal>>
-  last_login_at : timestamptz
-  last_activity_at : timestamptz
-  created_at : timestamptz
-}
+    USERS {
+        uuid user_id PK
+        text username UK
+        text password_hash "secret"
+        text email UK
+        text ssn "PII"
+        date date_of_birth "PII"
+        text trader_level
+        numeric available_funds "financial"
+        text user_role
+        text account_status
+        int session_timeout_minutes
+        numeric execution_buffer_percent
+        int failed_login_attempts "internal"
+        timestamptz locked_until "internal"
+        text reset_token "secret"
+        timestamptz reset_token_expires_at "internal"
+        timestamptz last_login_at
+        timestamptz last_activity_at
+        timestamptz created_at
+    }
 
-entity SESSIONS {
-  *session_id : uuid <<PK>>
-  --
-  user_id : uuid <<FK>>
-  issued_at : timestamptz
-  expires_at : timestamptz
-  revoked_at : timestamptz <<internal>>
-  last_seen_at : timestamptz
-}
+    SESSIONS {
+        uuid session_id PK
+        uuid user_id FK
+        timestamptz issued_at
+        timestamptz expires_at
+        timestamptz revoked_at "internal"
+        timestamptz last_seen_at
+    }
 
-entity INSTRUMENTS {
-  *instrument_id : int <<PK>>
-  --
-  ticker : text <<UK>>
-  name : text
-  asset_class : text
-  market : text
-  currency : text
-  is_tradable : bool
-}
+    INSTRUMENTS {
+        int instrument_id PK
+        text ticker UK
+        text name
+        text asset_class
+        text market
+        text currency
+        bool is_tradable
+    }
 
-entity STOCKS {
-  *instrument_id : int <<PK,FK>>
-  --
-  company_name : text
-  starting_price : numeric
-  sector : text
-  average_volume : bigint
-  base_volatility : numeric
-}
+    STOCKS {
+        int instrument_id PK, FK
+        text company_name
+        numeric starting_price
+        text sector
+        bigint average_volume
+        numeric base_volatility
+    }
 
-entity ACCOUNTS {
-  *account_id : int <<PK>>
-  --
-  user_id : uuid <<FK>>
-  cash_balance : numeric <<financial>>
-  opened_date : date
-  currency : text
-}
+    ACCOUNTS {
+        int account_id PK
+        uuid user_id FK
+        numeric cash_balance "financial"
+        date opened_date
+        text currency
+    }
 
-entity PRICE_POINTS {
-  *price_point_id : int <<PK>>
-  --
-  instrument_id : int <<FK>>
-  price : numeric
-  sequence_number : bigint <<UK>>
-  observed_at : timestamptz
-}
+    PRICE_POINTS {
+        int price_point_id PK
+        int instrument_id FK
+        numeric price
+        bigint sequence_number UK
+        timestamptz observed_at
+    }
 
-entity MARKET_TICKS {
-  *tick_id : int <<PK>>
-  --
-  instrument_id : int <<FK>>
-  price : numeric
-  bid : numeric
-  ask : numeric
-  bid_size : int
-  ask_size : int
-  trade_volume : int
-  sequence_number : bigint <<UK>>
-  observed_at : timestamptz
-}
+    MARKET_TICKS {
+        int tick_id PK
+        int instrument_id FK
+        numeric price
+        numeric bid
+        numeric ask
+        int bid_size
+        int ask_size
+        int trade_volume
+        bigint sequence_number UK
+        timestamptz observed_at
+    }
 
-entity QUOTES {
-  *quote_id : int <<PK>>
-  --
-  instrument_id : int <<FK>>
-  bid : numeric
-  ask : numeric
-  bid_size : int
-  ask_size : int
-  observed_at : timestamptz
-}
+    QUOTES {
+        int quote_id PK
+        int instrument_id FK
+        numeric bid
+        numeric ask
+        int bid_size
+        int ask_size
+        timestamptz observed_at
+    }
 
-entity CANDLES {
-  *candle_id : int <<PK>>
-  --
-  instrument_id : int <<FK>>
-  interval : text <<UK>>
-  period_start : timestamptz <<UK>>
-  open : numeric
-  high : numeric
-  low : numeric
-  close : numeric
-  volume : int
-  trade_count : int
-}
+    CANDLES {
+        int candle_id PK
+        int instrument_id FK
+        text interval UK
+        timestamptz period_start UK
+        numeric open
+        numeric high
+        numeric low
+        numeric close
+        int volume
+        int trade_count
+    }
 
-entity MARKET_STATE {
-  *market_state_id : int <<PK>>
-  --
-  instrument_id : int <<FK>>
-  trend : text
-  volatility : numeric <<internal>>
-  liquidity : double <<internal>>
-  momentum : double <<internal>>
-  as_of : timestamptz
-}
+    MARKET_STATE {
+        int market_state_id PK
+        int instrument_id FK
+        text trend
+        numeric volatility "internal"
+        double liquidity "internal"
+        double momentum "internal"
+        timestamptz as_of
+    }
 
-entity HOLDINGS {
-  *holding_id : int <<PK>>
-  --
-  account_id : int <<FK>>
-  instrument_id : int <<FK>>
-  quantity : numeric <<financial>>
-  updated_at : timestamptz
-}
+    HOLDINGS {
+        int holding_id PK
+        int account_id FK
+        int instrument_id FK
+        numeric quantity "financial"
+        timestamptz updated_at
+    }
 
-entity ORDERS {
-  *order_id : int <<PK>>
-  --
-  account_id : int <<FK>>
-  instrument_id : int <<FK>>
-  client_reference : uuid <<UK>>
-  order_type : text
-  status : text
-  quantity : numeric
-  indicative_price : numeric
-  buffer_percent : numeric
-  rejection_reason : text
-  submitted_at : timestamptz
-  accepted_at : timestamptz
-  resolved_at : timestamptz
-}
+    ORDERS {
+        int order_id PK
+        int account_id FK
+        int instrument_id FK
+        uuid client_reference UK
+        text order_type
+        text status
+        numeric quantity
+        numeric indicative_price
+        numeric buffer_percent
+        text rejection_reason
+        timestamptz submitted_at
+        timestamptz accepted_at
+        timestamptz resolved_at
+    }
 
-entity FILLS {
-  *fill_id : int <<PK>>
-  --
-  order_id : int <<FK,UK>>
-  quote_price : numeric
-  quantity : numeric
-  filled_at : timestamptz
-}
+    FILLS {
+        int fill_id PK
+        int order_id FK, UK
+        numeric quote_price
+        numeric quantity
+        timestamptz filled_at
+    }
 
-entity CASH_TRANSACTIONS {
-  *cash_transaction_id : int <<PK>>
-  --
-  account_id : int <<FK>>
-  fill_id : int <<FK,UK>>
-  amount : numeric <<financial>>
-  reason : text
-  created_at : timestamptz
-}
+    CASH_TRANSACTIONS {
+        int cash_transaction_id PK
+        int account_id FK
+        int fill_id FK, UK
+        numeric amount "financial"
+        text reason
+        timestamptz created_at
+    }
 
-entity HOLDING_MOVEMENTS {
-  *holding_movement_id : int <<PK>>
-  --
-  account_id : int <<FK>>
-  instrument_id : int <<FK>>
-  fill_id : int <<FK,UK>>
-  quantity_delta : numeric <<financial>>
-  created_at : timestamptz
-}
+    HOLDING_MOVEMENTS {
+        int holding_movement_id PK
+        int account_id FK
+        int instrument_id FK
+        int fill_id FK, UK
+        numeric quantity_delta "financial"
+        timestamptz created_at
+    }
 
-entity AUDIT_TRAIL {
-  *audit_id : int <<PK>>
-  --
-  order_id : int <<FK>>
-  event_type : text
-  detail : text
-  recorded_at : timestamptz <<internal>>
-}
-
-USERS ||--o{ SESSIONS : has
-USERS ||--o{ ACCOUNTS : owns
-ACCOUNTS ||--o{ ORDERS : places
-ACCOUNTS ||--o{ HOLDINGS : holds
-ACCOUNTS ||--o{ CASH_TRANSACTIONS : records
-ACCOUNTS ||--o{ HOLDING_MOVEMENTS : records
-INSTRUMENTS ||--o| STOCKS : "sim data"
-INSTRUMENTS ||--o{ PRICE_POINTS : generates
-INSTRUMENTS ||--o{ MARKET_TICKS : generates
-INSTRUMENTS ||--o{ QUOTES : generates
-INSTRUMENTS ||--o{ CANDLES : generates
-INSTRUMENTS ||--o{ MARKET_STATE : has
-INSTRUMENTS ||--o{ HOLDINGS : "held as"
-INSTRUMENTS ||--o{ ORDERS : "traded in"
-INSTRUMENTS ||--o{ HOLDING_MOVEMENTS : moves
-ORDERS ||--o| FILLS : "executes as"
-ORDERS ||--o{ AUDIT_TRAIL : logs
-FILLS ||--o| CASH_TRANSACTIONS : produces
-FILLS ||--|| HOLDING_MOVEMENTS : produces
-@enduml
+    AUDIT_TRAIL {
+        int audit_id PK
+        int order_id FK
+        text event_type
+        text detail
+        timestamptz recorded_at "internal"
+    }
 ```
 
 ## Table groups, at a glance
