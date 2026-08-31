@@ -23,6 +23,7 @@ table, its columns, key attributes, and how tables relate.
 ## Entity-relationship diagram
 
 ```mermaid
+%%{init: {"themeVariables": {"fontSize": "22px"}}}%%
 erDiagram
     USERS ||--o{ SESSIONS : "has"
     USERS ||--o{ ACCOUNTS : "owns"
