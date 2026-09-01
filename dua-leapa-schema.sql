@@ -8,11 +8,11 @@
 --   * audit_trail is insert-only (BR-14/15, 9.4): grant the app role INSERT/SELECT only.
 --   * orders.client_reference is an idempotency key stopping duplicate submissions (9.1).
 --
--- Market data (BR-08/12/13) mirrors github.com/ChrisChang8/FMS's Pydantic models.
--- FMS currently only implements price_points (Phase 4, US equities only).
--- quotes / market_ticks / candles / market_state are modelled now but stay empty
--- until FMS reaches Phases 5-9; UK/India equities, FX and crypto (BR-12) aren't
--- simulated yet — flag with the Programme Sponsor.
+-- Market data (BR-08/12/13) mirrors github.com/ChrisChang8/FMS's PostgreSQL
+-- migrations 0001-0008. Those migrations are canonical for simulator storage:
+-- reproducible sessions, stock reference data, behavior/state data, quotes,
+-- ticks, candles, and replay indexes. FMS currently simulates U.S. equities only;
+-- UK/India equities, FX, and crypto (BR-12) remain trading-platform-only assets.
 --
 -- Open assumptions (confirm with Product Owner before relying on them):
 --   * trader_level: BEGINNER / INTERMEDIATE / ADVANCED (KAN-78)
@@ -32,15 +32,20 @@ DROP TABLE IF EXISTS cash_transactions;
 DROP TABLE IF EXISTS fills;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS holdings;
-DROP TABLE IF EXISTS market_state;
 DROP TABLE IF EXISTS candles;
-DROP TABLE IF EXISTS quotes;
 DROP TABLE IF EXISTS market_ticks;
+DROP TABLE IF EXISTS quotes;
+DROP TABLE IF EXISTS market_behaviors;
+DROP TABLE IF EXISTS market_states;
+-- Legacy pre-migration simulator tables; retained here only for clean upgrades.
+DROP TABLE IF EXISTS market_state;
 DROP TABLE IF EXISTS price_points;
-DROP TABLE IF EXISTS stocks;
 DROP TABLE IF EXISTS accounts;
+-- CASCADE also handles the legacy stocks -> instruments foreign key direction.
+DROP TABLE IF EXISTS instruments CASCADE;
+DROP TABLE IF EXISTS stocks;
+DROP TABLE IF EXISTS simulation_sessions;
 DROP TABLE IF EXISTS sessions;
-DROP TABLE IF EXISTS instruments;
 DROP TABLE IF EXISTS users;
 
 -- Purpose (granular): login credentials, profile, and account-level settings for one trader/admin.
@@ -85,29 +90,49 @@ CREATE TABLE sessions (
     last_seen_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Purpose (granular): one reproducible FMS run and its seed/configuration.
+-- Purpose (overarching): groups all generated market data for replay and cleanup.
+-- Canonical source: migrations/0001_create_simulation_sessions.sql.
+CREATE TABLE simulation_sessions (
+    id          BIGSERIAL PRIMARY KEY,
+    seed        INTEGER NOT NULL,
+    drift       DOUBLE PRECISION NOT NULL,
+    config      JSONB NOT NULL DEFAULT '{}'::jsonb,
+    started_at  TIMESTAMPTZ NOT NULL,
+    ended_at    TIMESTAMPTZ NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT simulation_sessions_ended_after_started
+        CHECK (ended_at IS NULL OR ended_at >= started_at)
+);
+
+-- Purpose (granular): static setup data for one stock simulated by FMS.
+-- Purpose (overarching): canonical symbol-keyed reference for every FMS data row.
+-- Canonical source: migrations/0002_create_stocks.sql.
+CREATE TABLE stocks (
+    symbol           VARCHAR(5) PRIMARY KEY,
+    company_name     TEXT NOT NULL,
+    starting_price   NUMERIC(18, 6) NOT NULL CHECK (starting_price > 0),
+    sector           TEXT NOT NULL,
+    average_volume   BIGINT NOT NULL CHECK (average_volume > 0),
+    base_volatility  NUMERIC(18, 6) NOT NULL CHECK (base_volatility >= 0),
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT stocks_symbol_uppercase CHECK (symbol = UPPER(symbol))
+);
+
 -- Purpose (granular): one tradable asset — equity, FX pair, or crypto.
 -- Purpose (overarching): shared reference table every quote, order, holding, and fill hangs off.
 CREATE TABLE instruments (
-    instrument_id  SERIAL PRIMARY KEY,
-    ticker         TEXT NOT NULL UNIQUE,
-    name           TEXT NOT NULL,
-    asset_class    TEXT NOT NULL CHECK (asset_class IN ('Equity', 'FX', 'Crypto')),
-    market         TEXT CHECK (market IN ('UK', 'US', 'IN')),                        -- equities only; NULL for FX/crypto
-    currency       TEXT NOT NULL,
-    is_tradable    BOOLEAN NOT NULL DEFAULT TRUE,                                    -- BR-05 tradability check
+    instrument_id          SERIAL PRIMARY KEY,
+    ticker                 TEXT NOT NULL UNIQUE,
+    name                   TEXT NOT NULL,
+    asset_class            TEXT NOT NULL CHECK (asset_class IN ('Equity', 'FX', 'Crypto')),
+    market                 TEXT CHECK (market IN ('UK', 'US', 'IN')),                 -- equities only; NULL for FX/crypto
+    currency               TEXT NOT NULL,
+    is_tradable            BOOLEAN NOT NULL DEFAULT TRUE,                             -- BR-05 tradability check
+    simulated_stock_symbol VARCHAR(5) UNIQUE REFERENCES stocks(symbol),               -- NULL when FMS does not simulate it
     CHECK (asset_class <> 'Equity' OR ticker ~ '^[A-Z][A-Z0-9.]{0,4}$'),
-    CHECK ((asset_class = 'Equity') = (market IS NOT NULL))
-);
-
--- Purpose (granular): name, sector, and simulation params for instruments FMS simulates.
--- Purpose (overarching): feeds the price simulator; matches app.models.Stock field-for-field (KAN-91, KAN-98).
-CREATE TABLE stocks (
-    instrument_id     INTEGER PRIMARY KEY REFERENCES instruments(instrument_id),
-    company_name      TEXT NOT NULL CHECK (char_length(company_name) BETWEEN 1 AND 120),
-    starting_price    NUMERIC(18,6) NOT NULL CHECK (starting_price > 0),          -- FMS: Money
-    sector            TEXT NOT NULL CHECK (char_length(sector) BETWEEN 1 AND 80),
-    average_volume    BIGINT NOT NULL CHECK (average_volume > 0),                 -- FMS: PositiveInt
-    base_volatility   NUMERIC(18,6) NOT NULL CHECK (base_volatility >= 0)         -- FMS: NonNegativeMoney
+    CHECK ((asset_class = 'Equity') = (market IS NOT NULL)),
+    CHECK (simulated_stock_symbol IS NULL OR (asset_class = 'Equity' AND market = 'US'))
 );
 
 -- Purpose (granular): one brokerage/child account, holding a single cash balance in one currency.
@@ -122,74 +147,99 @@ CREATE TABLE accounts (
     currency      TEXT NOT NULL DEFAULT 'USD'
 );
 
--- Purpose (granular): one simulated price tick — instrument, price, sequence number.
--- Purpose (overarching): the only market-data table FMS actually produces today (Phase 4); everything downstream reads this.
-CREATE TABLE price_points (
-    price_point_id   SERIAL PRIMARY KEY,
-    instrument_id    INTEGER NOT NULL REFERENCES instruments(instrument_id),
-    price            NUMERIC(18,6) NOT NULL CHECK (price > 0),
-    sequence_number  BIGINT NOT NULL CHECK (sequence_number > 0),            -- per-instrument, monotonic
-    observed_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (instrument_id, sequence_number)
+-- Purpose (granular): current behavior snapshot for one stock in one run.
+-- Purpose (overarching): mutable state used by FMS while generating prices.
+CREATE TABLE market_states (
+    id          BIGSERIAL PRIMARY KEY,
+    session_id  BIGINT NOT NULL REFERENCES simulation_sessions (id) ON DELETE CASCADE,
+    symbol      VARCHAR(5) NOT NULL REFERENCES stocks (symbol) ON DELETE CASCADE,
+    trend       TEXT NOT NULL CHECK (trend IN ('normal', 'uptrend', 'downtrend', 'sideways')),
+    volatility  NUMERIC(18, 6) NOT NULL CHECK (volatility >= 0),
+    liquidity   NUMERIC(5, 4) NOT NULL CHECK (liquidity BETWEEN 0 AND 1),
+    momentum    NUMERIC(5, 4) NOT NULL CHECK (momentum BETWEEN -1 AND 1),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT market_states_session_symbol_unique UNIQUE (session_id, symbol)
 );
 
--- Purpose (granular): one raw tick with bid/ask/volume.
--- Purpose (overarching): storage shape reserved now (matches app.models.MarketTick) so ingestion needs no migration once FMS Phase 8 lands.
+-- Purpose (granular): append-only history of behaviors applied during a run.
+-- Purpose (overarching): makes behavior-driven simulations auditable and replayable.
+CREATE TABLE market_behaviors (
+    id                BIGSERIAL PRIMARY KEY,
+    session_id        BIGINT NOT NULL REFERENCES simulation_sessions (id) ON DELETE CASCADE,
+    symbol            VARCHAR(5) NOT NULL REFERENCES stocks (symbol) ON DELETE CASCADE,
+    behavior_type     TEXT NOT NULL CHECK (
+        behavior_type IN (
+            'normal',
+            'uptrend',
+            'downtrend',
+            'sideways',
+            'momentum',
+            'mean_reversion',
+            'breakout',
+            'breakdown',
+            'consolidation',
+            'volatility_spike'
+        )
+    ),
+    start_time        TIMESTAMPTZ NOT NULL,
+    duration_seconds  NUMERIC NOT NULL CHECK (duration_seconds > 0),
+    strength          NUMERIC(5, 4) NOT NULL CHECK (strength BETWEEN -1 AND 1),
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Purpose (granular): one bid/ask snapshot generated by FMS.
+-- Purpose (overarching): session-scoped quote history for downstream consumers and replay.
+CREATE TABLE quotes (
+    id          BIGSERIAL PRIMARY KEY,
+    session_id  BIGINT NOT NULL REFERENCES simulation_sessions (id) ON DELETE CASCADE,
+    symbol      VARCHAR(5) NOT NULL REFERENCES stocks (symbol) ON DELETE CASCADE,
+    "timestamp" TIMESTAMPTZ NOT NULL,
+    bid         NUMERIC(18, 6) NOT NULL CHECK (bid > 0),
+    ask         NUMERIC(18, 6) NOT NULL CHECK (ask > 0),
+    bid_size    INTEGER NOT NULL CHECK (bid_size > 0),
+    ask_size    INTEGER NOT NULL CHECK (ask_size > 0),
+    CONSTRAINT quotes_bid_lower_than_ask CHECK (bid < ask)
+);
+
+-- Purpose (granular): one raw trade update with its prevailing quote and volume.
+-- Purpose (overarching): canonical high-volume stream used for replay and aggregation.
 CREATE TABLE market_ticks (
-    tick_id          SERIAL PRIMARY KEY,
-    instrument_id    INTEGER NOT NULL REFERENCES instruments(instrument_id),
-    price            NUMERIC(18,6) NOT NULL CHECK (price > 0),
-    bid              NUMERIC(18,6) NOT NULL CHECK (bid > 0),
-    ask              NUMERIC(18,6) NOT NULL CHECK (ask > 0),
+    id               BIGSERIAL PRIMARY KEY,
+    session_id       BIGINT NOT NULL REFERENCES simulation_sessions (id) ON DELETE CASCADE,
+    symbol           VARCHAR(5) NOT NULL REFERENCES stocks (symbol) ON DELETE CASCADE,
+    "timestamp"      TIMESTAMPTZ NOT NULL,
+    price            NUMERIC(18, 6) NOT NULL CHECK (price > 0),
+    bid              NUMERIC(18, 6) NOT NULL CHECK (bid > 0),
+    ask              NUMERIC(18, 6) NOT NULL CHECK (ask > 0),
     bid_size         INTEGER NOT NULL CHECK (bid_size > 0),
     ask_size         INTEGER NOT NULL CHECK (ask_size > 0),
     trade_volume     INTEGER NOT NULL CHECK (trade_volume > 0),
     sequence_number  BIGINT NOT NULL CHECK (sequence_number > 0),
-    observed_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CHECK (bid < ask AND price BETWEEN bid AND ask),
-    UNIQUE (instrument_id, sequence_number)
+    CONSTRAINT market_ticks_bid_lower_than_ask CHECK (bid < ask),
+    CONSTRAINT market_ticks_price_within_spread CHECK (price BETWEEN bid AND ask),
+    CONSTRAINT market_ticks_session_symbol_sequence_unique
+        UNIQUE (session_id, symbol, sequence_number)
 );
 
--- Purpose (granular): one bid/ask snapshot for an instrument.
--- Purpose (overarching): reserved for FMS Phase 7 (app.models.Quote); stays empty until then.
-CREATE TABLE quotes (
-    quote_id       SERIAL PRIMARY KEY,
-    instrument_id  INTEGER NOT NULL REFERENCES instruments(instrument_id),
-    bid            NUMERIC(18,6) NOT NULL CHECK (bid > 0),
-    ask            NUMERIC(18,6) NOT NULL CHECK (ask > bid),                -- FMS: validate_quote_prices
-    bid_size       INTEGER NOT NULL CHECK (bid_size > 0),
-    ask_size       INTEGER NOT NULL CHECK (ask_size > 0),
-    observed_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- Purpose (granular): one OHLCV bar per instrument/interval/period.
--- Purpose (overarching): reserved for FMS Phase 9 (app.models.Candle); feeds future charting/reporting.
+-- Purpose (granular): one OHLCV bucket aggregated from FMS market ticks.
+-- Purpose (overarching): session-scoped historical bars for charting and replay.
 CREATE TABLE candles (
-    candle_id      SERIAL PRIMARY KEY,
-    instrument_id  INTEGER NOT NULL REFERENCES instruments(instrument_id),
-    interval       TEXT NOT NULL CHECK (interval ~ '^[1-9][0-9]*(s|m|h|d)$'), -- e.g. '1m', '5m', '1h', '1d'
-    period_start   TIMESTAMPTZ NOT NULL,
-    open           NUMERIC(18,6) NOT NULL,
-    high           NUMERIC(18,6) NOT NULL,
-    low            NUMERIC(18,6) NOT NULL,
-    close          NUMERIC(18,6) NOT NULL,
-    volume         INTEGER NOT NULL CHECK (volume > 0),
-    trade_count    INTEGER NOT NULL CHECK (trade_count > 0),
-    CHECK (high >= GREATEST(open, close, low) AND low <= LEAST(open, close, high)), -- FMS: validate_ohlc_prices
-    UNIQUE (instrument_id, interval, period_start)
-);
-
--- Purpose (granular): trend/volatility/liquidity/momentum inputs the simulator uses per instrument.
--- Purpose (overarching): reserved for FMS Phase 5 (app.models.MarketState); drives future price generation, not consumer-facing.
-CREATE TABLE market_state (
-    market_state_id  SERIAL PRIMARY KEY,
-    instrument_id    INTEGER NOT NULL REFERENCES instruments(instrument_id),
-    trend            TEXT NOT NULL DEFAULT 'normal'
-                         CHECK (trend IN ('normal', 'uptrend', 'downtrend', 'sideways')),
-    volatility       NUMERIC(18,6) NOT NULL CHECK (volatility >= 0),          -- FMS: NonNegativeMoney
-    liquidity        DOUBLE PRECISION NOT NULL CHECK (liquidity BETWEEN 0.0 AND 1.0),   -- FMS: Ratio
-    momentum         DOUBLE PRECISION NOT NULL CHECK (momentum BETWEEN -1.0 AND 1.0),   -- FMS: SignedRatio
-    as_of            TIMESTAMPTZ NOT NULL DEFAULT now()
+    id            BIGSERIAL PRIMARY KEY,
+    session_id    BIGINT NOT NULL REFERENCES simulation_sessions (id) ON DELETE CASCADE,
+    symbol        VARCHAR(5) NOT NULL REFERENCES stocks (symbol) ON DELETE CASCADE,
+    "interval"    TEXT NOT NULL CHECK ("interval" ~ '^[1-9][0-9]*(s|m|h|d)$'),
+    "timestamp"   TIMESTAMPTZ NOT NULL,
+    open          NUMERIC(18, 6) NOT NULL CHECK (open > 0),
+    high          NUMERIC(18, 6) NOT NULL CHECK (high > 0),
+    low           NUMERIC(18, 6) NOT NULL CHECK (low > 0),
+    close         NUMERIC(18, 6) NOT NULL CHECK (close > 0),
+    volume        BIGINT NOT NULL CHECK (volume > 0),
+    trade_count   INTEGER NOT NULL CHECK (trade_count > 0),
+    CONSTRAINT candles_low_lower_than_high CHECK (low <= high),
+    CONSTRAINT candles_high_is_max CHECK (high = GREATEST(open, high, low, close)),
+    CONSTRAINT candles_low_is_min CHECK (low = LEAST(open, high, low, close)),
+    CONSTRAINT candles_session_symbol_interval_timestamp_unique
+        UNIQUE (session_id, symbol, "interval", "timestamp")
 );
 
 -- Purpose (granular): one account/instrument pair holding a current quantity.
@@ -266,3 +316,13 @@ CREATE TABLE audit_trail (
     detail        TEXT,
     recorded_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Replay and time-range lookup indexes from migrations/0008_create_indexes.sql.
+CREATE INDEX idx_quotes_session_symbol_timestamp
+    ON quotes (session_id, symbol, "timestamp");
+CREATE INDEX idx_market_ticks_session_symbol_timestamp
+    ON market_ticks (session_id, symbol, "timestamp");
+CREATE INDEX idx_candles_session_symbol_interval_timestamp
+    ON candles (session_id, symbol, "interval", "timestamp");
+CREATE INDEX idx_market_behaviors_session_symbol_start_time
+    ON market_behaviors (session_id, symbol, start_time);
