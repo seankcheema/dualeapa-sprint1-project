@@ -15,3 +15,9 @@ TBD
 
 ## Branching Strategy
 Our branching strategy is trunking
+
+## External Frameworks 
+SpartanNG UI - accessible, customizable components for Angular application.
+PrimeNG UI -  comprehensive UI component library specifically designed for Angular applications.
+Figma - UI design mockups and prototypes 
+Claude Design 
