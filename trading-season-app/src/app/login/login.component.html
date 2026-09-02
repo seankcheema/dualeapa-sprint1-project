@@ -1,50 +1,81 @@
-<div class="login-container">
-  <div class="login-panel">
-    <div hlmCard class="w-full max-w-sm">
-      <div hlmCardHeader>
-        <h3 hlmCardTitle class="text-2xl">Log in</h3>
-        <p hlmCardDescription>Welcome back to TradingSeason</p>
-      </div>
+<div class="bg-background flex min-h-screen items-center justify-center px-4 py-12">
+  <div hlmCard class="w-full max-w-sm rounded-[10px]">
+    <div hlmCardHeader class="text-center">
+      <h1 hlmCardTitle class="text-xl">Welcome back</h1>
+      <p hlmCardDescription>Sign in to your Trading Season account</p>
+    </div>
 
-      <div hlmCardContent>
-        <form (ngSubmit)="onSubmit()" #loginForm="ngForm" hlmFieldGroup>
-          <div hlmField>
-            <label hlmFieldLabel for="username">Username</label>
+    <div hlmCardContent>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="flex flex-col gap-5">
+        <div hlmField>
+          <label hlmFieldLabel for="email" class="text-foreground">Email</label>
+          <div class="relative">
+            <ng-icon
+              name="lucideMail"
+              class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-[16px]"
+            />
             <input
               hlmInput
-              id="username"
-              type="text"
-              class="w-full"
-              [(ngModel)]="username"
-              name="username"
-              placeholder=""
+              id="email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              class="rounded-[5px] pl-8"
+              formControlName="email"
             />
           </div>
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <p class="text-destructive text-sm">Enter a valid email address.</p>
+          }
+        </div>
 
-          <div hlmField>
-            <label hlmFieldLabel for="password">Password</label>
+        <div hlmField>
+          <label hlmFieldLabel for="password" class="text-foreground">Password</label>
+          <div class="relative">
+            <ng-icon
+              name="lucideLock"
+              class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-[16px]"
+            />
             <input
               hlmInput
               id="password"
-              type="password"
-              class="w-full"
-              [(ngModel)]="password"
-              name="password"
-              placeholder=""
+              [type]="showPassword() ? 'text' : 'password'"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="rounded-[5px] px-8"
+              formControlName="password"
             />
+            <button
+              type="button"
+              class="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 flex -translate-y-1/2 cursor-pointer items-center justify-center border-0 bg-transparent p-0 transition-colors"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            >
+              <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'" class="text-[16px]" />
+            </button>
           </div>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <p class="text-destructive text-sm">Password is required.</p>
+          }
+        </div>
 
-          <button hlmBtn type="submit" class="w-full">Submit</button>
-        </form>
-      </div>
-
-      <div hlmCardFooter class="justify-center">
-        <a routerLink="/register" class="create-account-link">Create an account</a>
-      </div>
+        <button
+          hlmBtn
+          type="submit"
+          class="mt-1 w-full cursor-pointer rounded-[5px] transition-colors hover:bg-primary/80"
+        >
+          <ng-icon name="lucideLogIn" />
+          Sign in
+        </button>
+      </form>
     </div>
-  </div>
 
-  <div class="branding-panel">
-    <h2 class="branding-title">TradingSeason</h2>
+
+    <div hlmCardFooter class="justify-center">
+      <p class="text-muted-foreground text-sm">
+        Don't have an account?
+        <a routerLink="/register" class="text-primary font-medium hover:underline">Create one</a>
+      </p>
+    </div>
   </div>
 </div>
