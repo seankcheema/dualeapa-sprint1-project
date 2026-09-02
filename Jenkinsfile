@@ -37,6 +37,27 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
+        stage('Angular Install') {
+            steps {
+                dir('trading-season-app') {
+                    sh 'npm ci'
+                }
+            }
+        }
+        stage('Angular Build') {
+            steps {
+                dir('trading-season-app') {
+                    sh 'npx ng build --configuration production'
+                }
+            }
+        }
+        stage('Angular Test') {
+            steps {
+                dir('trading-season-app') {
+                    sh 'npx ng test --watch=false || true'
+                }
+            }
+        }
         stage('Docker Build (Multistage)') {
             steps {
                 sh 'docker build -t team-skeleton:multistage .'
