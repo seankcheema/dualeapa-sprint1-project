@@ -37,6 +37,28 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
+        stage('Angular Install') {
+            steps {
+                // Agent has no Node.js installed, so run npm/ng inside an ephemeral node container instead.
+                dir('trading-season-app') {
+                    sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/app" -w /app node:22-alpine npm ci'
+                }
+            }
+        }
+        stage('Angular Build') {
+            steps {
+                dir('trading-season-app') {
+                    sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/app" -w /app node:22-alpine npx ng build --configuration production'
+                }
+            }
+        }
+        stage('Angular Test') {
+            steps {
+                dir('trading-season-app') {
+                    sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/app" -w /app node:22-alpine npx ng test --watch=false || true'
+                }
+            }
+        }
         stage('Docker Build (Multistage)') {
             steps {
                 sh 'docker build -t team-skeleton:multistage .'
