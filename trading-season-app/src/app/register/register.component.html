@@ -1,0 +1,306 @@
+<div class="register-container">
+  <div class="register-panel">
+    <div hlmCard class="form-container">
+      <div hlmCardHeader>
+        <h3 hlmCardTitle class="text-2xl">Create Account</h3>
+        <p hlmCardDescription>Step {{ currentStep }} of 3</p>
+      </div>
+
+      <div hlmCardContent>
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="success-message">
+          {{ successMessage }}
+        </div>
+
+        <form (ngSubmit)="onSubmit()" hlmFieldGroup>
+          <!-- STEP 1: Personal Information -->
+          <div *ngIf="currentStep === 1" class="form-step" hlmFieldGroup>
+            <div class="form-row">
+              <div hlmField>
+                <label hlmFieldLabel for="firstName">First Name *</label>
+                <input
+                  hlmInput
+                  id="firstName"
+                  type="text"
+                  class="w-full"
+                  [forceInvalid]="!!errors['firstName']"
+                  [(ngModel)]="firstName"
+                  name="firstName"
+                  placeholder="John"
+                />
+                <hlm-field-error [forceShow]="!!errors['firstName']">{{ errors['firstName'] }}</hlm-field-error>
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="middleName">Middle Name</label>
+                <input
+                  hlmInput
+                  id="middleName"
+                  type="text"
+                  class="w-full"
+                  [(ngModel)]="middleName"
+                  name="middleName"
+                  placeholder="Michael (Optional)"
+                />
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="lastName">Last Name *</label>
+                <input
+                  hlmInput
+                  id="lastName"
+                  type="text"
+                  class="w-full"
+                  [forceInvalid]="!!errors['lastName']"
+                  [(ngModel)]="lastName"
+                  name="lastName"
+                  placeholder="Doe"
+                />
+                <hlm-field-error [forceShow]="!!errors['lastName']">{{ errors['lastName'] }}</hlm-field-error>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div hlmField>
+                <label hlmFieldLabel for="email">Email *</label>
+                <input
+                  hlmInput
+                  id="email"
+                  type="email"
+                  class="w-full"
+                  [forceInvalid]="!!errors['email']"
+                  [(ngModel)]="email"
+                  name="email"
+                  placeholder="john.doe@example.com"
+                />
+                <hlm-field-error [forceShow]="!!errors['email']">{{ errors['email'] }}</hlm-field-error>
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="dateOfBirth">Date of Birth *</label>
+                <input
+                  hlmInput
+                  id="dateOfBirth"
+                  type="date"
+                  class="w-full"
+                  [forceInvalid]="!!errors['dateOfBirth']"
+                  [(ngModel)]="dateOfBirth"
+                  name="dateOfBirth"
+                />
+                <hlm-field-error [forceShow]="!!errors['dateOfBirth']">{{ errors['dateOfBirth'] }}</hlm-field-error>
+              </div>
+            </div>
+
+            <div hlmField>
+              <label hlmFieldLabel for="ssn">Social Security Number *</label>
+              <input
+                hlmInput
+                id="ssn"
+                type="text"
+                class="w-full"
+                [forceInvalid]="!!errors['ssn']"
+                [(ngModel)]="ssn"
+                name="ssn"
+                (input)="onSSNInput($event)"
+                placeholder="XXX-XX-XXXX"
+                maxlength="11"
+              />
+              <hlm-field-error [forceShow]="!!errors['ssn']">{{ errors['ssn'] }}</hlm-field-error>
+            </div>
+          </div>
+
+          <!-- STEP 2: Account Information -->
+          <div *ngIf="currentStep === 2" class="form-step" hlmFieldGroup>
+            <div class="form-row">
+              <div hlmField>
+                <label hlmFieldLabel for="username">Username *</label>
+                <input
+                  hlmInput
+                  id="username"
+                  type="text"
+                  class="w-full"
+                  [forceInvalid]="!!errors['username']"
+                  [(ngModel)]="username"
+                  name="username"
+                  placeholder="john_doe"
+                />
+                <hlm-field-error [forceShow]="!!errors['username']">{{ errors['username'] }}</hlm-field-error>
+                <span class="helper-text" *ngIf="!errors['username']">3-20 characters, letters, numbers, hyphens, underscores</span>
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="traderLevel">Experience Level</label>
+                <hlm-native-select [(ngModel)]="traderLevel" name="traderLevel" class="w-full">
+                  <option *ngFor="let level of traderLevels" [value]="level" hlmNativeSelectOption>
+                    {{ level }}
+                  </option>
+                </hlm-native-select>
+              </div>
+            </div>
+
+            <div hlmField>
+              <label hlmFieldLabel for="password">Password *</label>
+              <div class="password-input-wrapper">
+                <input
+                  hlmInput
+                  [id]="'password'"
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="w-full"
+                  [forceInvalid]="!!errors['password']"
+                  [(ngModel)]="password"
+                  name="password"
+                  placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special"
+                />
+                <button hlmBtn type="button" variant="ghost" size="icon-sm" class="toggle-password" (click)="showPassword = !showPassword">
+                  {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                </button>
+              </div>
+              <hlm-field-error [forceShow]="!!errors['password']">{{ errors['password'] }}</hlm-field-error>
+            </div>
+
+            <div hlmField>
+              <label hlmFieldLabel for="confirmPassword">Confirm Password *</label>
+              <div class="password-input-wrapper">
+                <input
+                  hlmInput
+                  id="confirmPassword"
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  class="w-full"
+                  [forceInvalid]="!!errors['confirmPassword']"
+                  [(ngModel)]="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="Confirm your password"
+                />
+                <button hlmBtn type="button" variant="ghost" size="icon-sm" class="toggle-password" (click)="showConfirmPassword = !showConfirmPassword">
+                  {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+                </button>
+              </div>
+              <hlm-field-error [forceShow]="!!errors['confirmPassword']">{{ errors['confirmPassword'] }}</hlm-field-error>
+            </div>
+          </div>
+
+          <!-- STEP 3: Address Information -->
+          <div *ngIf="currentStep === 3" class="form-step" hlmFieldGroup>
+            <div hlmField>
+              <label hlmFieldLabel for="addressLine1">Address *</label>
+              <input
+                hlmInput
+                id="addressLine1"
+                type="text"
+                class="w-full"
+                [forceInvalid]="!!errors['addressLine1']"
+                [(ngModel)]="addressLine1"
+                name="addressLine1"
+                placeholder="123 Main Street"
+              />
+              <hlm-field-error [forceShow]="!!errors['addressLine1']">{{ errors['addressLine1'] }}</hlm-field-error>
+            </div>
+
+            <div hlmField>
+              <label hlmFieldLabel for="addressLine2">Apartment, Suite, etc. (Optional)</label>
+              <input
+                hlmInput
+                id="addressLine2"
+                type="text"
+                class="w-full"
+                [(ngModel)]="addressLine2"
+                name="addressLine2"
+                placeholder="Apt 4B"
+              />
+            </div>
+
+            <div class="form-row">
+              <div hlmField class="flex-2">
+                <label hlmFieldLabel for="city">City *</label>
+                <input
+                  hlmInput
+                  id="city"
+                  type="text"
+                  class="w-full"
+                  [forceInvalid]="!!errors['city']"
+                  [(ngModel)]="city"
+                  name="city"
+                  placeholder="New York"
+                />
+                <hlm-field-error [forceShow]="!!errors['city']">{{ errors['city'] }}</hlm-field-error>
+              </div>
+
+              <div hlmField class="flex-1">
+                <label hlmFieldLabel for="state">State *</label>
+                <hlm-native-select [(ngModel)]="state" name="state" class="w-full" [forceInvalid]="!!errors['state']">
+                  <option value="" hlmNativeSelectOption>Select State</option>
+                  <option *ngFor="let st of states" [value]="st" hlmNativeSelectOption>{{ st }}</option>
+                </hlm-native-select>
+                <hlm-field-error [forceShow]="!!errors['state']">{{ errors['state'] }}</hlm-field-error>
+              </div>
+
+              <div hlmField class="flex-1">
+                <label hlmFieldLabel for="postalCode">Postal Code *</label>
+                <input
+                  hlmInput
+                  id="postalCode"
+                  type="text"
+                  class="w-full"
+                  [forceInvalid]="!!errors['postalCode']"
+                  [(ngModel)]="postalCode"
+                  name="postalCode"
+                  (input)="onPostalCodeInput($event)"
+                  placeholder="10001 or 10001-1234"
+                  maxlength="10"
+                />
+                <hlm-field-error [forceShow]="!!errors['postalCode']">{{ errors['postalCode'] }}</hlm-field-error>
+              </div>
+            </div>
+
+            <div hlmField>
+              <label hlmFieldLabel for="country">Country</label>
+              <input
+                hlmInput
+                id="country"
+                type="text"
+                class="w-full"
+                [(ngModel)]="country"
+                name="country"
+                disabled
+              />
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="form-navigation">
+            <button
+              hlmBtn
+              type="button"
+              variant="outline"
+              (click)="prevStep()"
+              *ngIf="currentStep > 1"
+            >
+              ← Back
+            </button>
+
+            <button
+              hlmBtn
+              type="button"
+              (click)="nextStep()"
+              *ngIf="currentStep < 3"
+            >
+              Next →
+            </button>
+
+            <button
+              hlmBtn
+              type="submit"
+              *ngIf="currentStep === 3"
+            >
+              Create Account
+            </button>
+          </div>
+
+          <div class="login-link">
+            Have an account? <a routerLink="/login">Log in here</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

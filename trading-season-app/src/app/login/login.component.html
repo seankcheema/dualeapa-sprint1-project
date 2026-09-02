@@ -1,37 +1,47 @@
 <div class="login-container">
   <div class="login-panel">
-    
-    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-      <div class="form-group">
-        <h3 class="login-title">Log in</h3>
-        <label for="username" class="form-label">Username</label>
-        <input 
-          id="username" 
-          type="text" 
-          class="form-input" 
-          [(ngModel)]="username" 
-          name="username"
-          placeholder=""
-        />
+    <div hlmCard class="w-full max-w-sm">
+      <div hlmCardHeader>
+        <h3 hlmCardTitle class="text-2xl">Log in</h3>
+        <p hlmCardDescription>Welcome back to TradingSeason</p>
       </div>
 
-      <div class="form-group">
-        <label for="password" class="form-label">Password</label>
-        <input 
-          id="password" 
-          type="password" 
-          class="form-input" 
-          [(ngModel)]="password" 
-          name="password"
-          placeholder=""
-        />
+      <div hlmCardContent>
+        <form (ngSubmit)="onSubmit()" #loginForm="ngForm" hlmFieldGroup>
+          <div hlmField>
+            <label hlmFieldLabel for="username">Username</label>
+            <input
+              hlmInput
+              id="username"
+              type="text"
+              class="w-full"
+              [(ngModel)]="username"
+              name="username"
+              placeholder=""
+            />
+          </div>
+
+          <div hlmField>
+            <label hlmFieldLabel for="password">Password</label>
+            <input
+              hlmInput
+              id="password"
+              type="password"
+              class="w-full"
+              [(ngModel)]="password"
+              name="password"
+              placeholder=""
+            />
+          </div>
+
+          <button hlmBtn type="submit" class="w-full">Submit</button>
+        </form>
       </div>
 
-      <button type="submit" class="submit-button">Submit</button>
-      <a href="#" class="create-account-link">Create an account</a>
-    </form>
-
-    
+      <div hlmCardFooter class="justify-center">
+        <a routerLink="/register" class="create-account-link">Create an account</a>
+      </div>
+    </div>
   </div>
 
   <div class="branding-panel">
