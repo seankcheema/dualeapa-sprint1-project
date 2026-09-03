@@ -23,10 +23,26 @@ pipeline {
         }
         stage('Test') {
             steps {
+                sh '''
+                    docker rm -f test-db >/dev/null 2>&1 || true
+                    docker run -d --name test-db \
+                        -e POSTGRES_DB=paysprint_test \
+                        -e POSTGRES_USER=paysprint \
+                        -e POSTGRES_PASSWORD=changeme \
+                        -p 5432:5432 \
+                        -v "$WORKSPACE/dua-leapa-schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro" \
+                        postgres:16-alpine
+
+                    for i in $(seq 1 30); do
+                        docker exec test-db pg_isready -U paysprint -d paysprint_test >/dev/null 2>&1 && break
+                        sleep 1
+                    done
+                '''
                 sh 'mvn -B test || true'
             }
             post {
                 always {
+                    sh 'docker rm -f test-db >/dev/null 2>&1 || true'
                     junit testResults: 'target/surefire-reports/*.xml', 
                           allowEmptyResults: true
                 }
