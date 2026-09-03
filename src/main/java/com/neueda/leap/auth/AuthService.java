@@ -12,6 +12,10 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * Handles user registration and login, including account lockout after
+ * repeated failed login attempts.
+ */
 @Service
 public class AuthService {
 
@@ -30,6 +34,13 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Registers a new user, rejecting duplicate usernames or emails.
+     *
+     * @param request the registration details
+     * @return the newly created user
+     * @throws ConflictException if the username or email is already taken
+     */
     @Transactional
     public User register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
@@ -50,6 +61,13 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    /**
+     * Validates credentials and issues a new session for the user.
+     *
+     * @param request the login credentials
+     * @return the newly issued session
+     * @throws UnauthorizedException if the credentials are invalid or the account is inactive/locked
+     */
     @Transactional
     public UserSession login(LoginRequest request) {
         User user = userRepository.findByUsername(request.username())
@@ -82,6 +100,7 @@ public class AuthService {
         return sessionRepository.save(session);
     }
 
+    /** Increments the failed login counter, locking the account once the limit is reached. */
     private void recordFailedAttempt(User user) {
         int attempts = user.getFailedLoginAttempts() + 1;
         user.setFailedLoginAttempts(attempts);

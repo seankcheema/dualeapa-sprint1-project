@@ -8,6 +8,9 @@ import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * Session entity representing an authenticated user's active login session.
+ */
 @Entity
 @Table(name = "sessions")
 public class UserSession {

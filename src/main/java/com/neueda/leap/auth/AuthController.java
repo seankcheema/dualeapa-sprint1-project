@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST endpoints for user registration and login.
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -20,6 +23,12 @@ public class AuthController {
         this.authService = authService;
     }
 
+    /**
+     * Registers a new user account.
+     *
+     * @param request the registration details
+     * @return the created user's public profile
+     */
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
@@ -27,6 +36,12 @@ public class AuthController {
         return new RegisterResponse(user.getUserId(), user.getUsername(), user.getEmail());
     }
 
+    /**
+     * Authenticates a user and issues a new session.
+     *
+     * @param request the login credentials
+     * @return the issued session's id and expiry
+     */
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         UserSession session = authService.login(request);
