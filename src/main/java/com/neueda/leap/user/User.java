@@ -10,6 +10,9 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * User entity representing a user in the system.
+ */
 @Entity
 @Table(name = "users")
 public class User {
