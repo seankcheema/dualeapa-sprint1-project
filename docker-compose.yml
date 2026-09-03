@@ -1,13 +1,42 @@
 services:
-  app:
+  # frontend (trading-season-app) has no Dockerfile yet — add one and
+  # uncomment this service once it exists.
+  # frontend:
+  #   build: ./trading-season-app
+  #   ports:
+  #     - "4200:80"
+  #   depends_on:
+  #     - backend
+
+  backend:
+    # Dockerfile lives at the repo root (builds the Maven project in src/).
     build: .
-    # No ports: mapping — the app service is intentionally unreachable from the
-    # host. `host.docker.internal` is Docker Desktop's DNS name for the host
-    # machine; plain "localhost" here would resolve to this container itself,
-    # not the Postgres server running natively on the host.
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/paysprint
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/paysprint
       SPRING_DATASOURCE_USERNAME: paysprint
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: paysprint
+      POSTGRES_USER: paysprint
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      # Db is reachable from the host too, for DBA tooling on the developer's
+      # machine during development (frontend/backend never call db directly
+      # from the browser — only the backend container talks to db).
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+    # Named volume: persists Postgres data across `docker compose down` and
+    # `docker compose up`. Use `docker compose down -v` to also remove this
+    # volume, which wipes the database and starts fresh on the next `up`.
+
