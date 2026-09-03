@@ -12,7 +12,7 @@ services:
     # Dockerfile lives at the repo root (builds the Maven project in src/).
     build: .
     ports:
-      - "8080:8081"
+      - "8081:8081"
     depends_on:
       - db
     environment:
