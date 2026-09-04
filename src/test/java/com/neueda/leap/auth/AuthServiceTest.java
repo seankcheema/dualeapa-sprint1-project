@@ -45,7 +45,8 @@ class AuthServiceTest {
     }
 
     private static RegisterRequest registerRequest(String username, String email) {
-        return new RegisterRequest(username, email, "password123", "123-45-6789", LocalDate.of(1990, 1, 1));
+        return new RegisterRequest(username, email, "password123", "Alice", null, "Anderson", "123-45-6789",
+                "1 Main St", LocalDate.of(1990, 1, 1));
     }
 
     private static User activeUser(String username, String passwordHash) {

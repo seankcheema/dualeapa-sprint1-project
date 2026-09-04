@@ -34,7 +34,8 @@ class AuthControllerUnitTest {
     @Test
     void registerReturnsResponseBuiltFromServiceResult() {
         RegisterRequest request = new RegisterRequest(
-                "alice", "alice@example.com", "password123", "123-45-6789", LocalDate.of(1990, 1, 1));
+                "alice", "alice@example.com", "password123", "Alice", null, "Anderson", "123-45-6789", "1 Main St",
+                LocalDate.of(1990, 1, 1));
         User user = new User();
         user.setUserId(UUID.randomUUID());
         user.setUsername("alice");
@@ -65,7 +66,8 @@ class AuthControllerUnitTest {
     @Test
     void registerPropagatesConflictExceptionFromService() {
         RegisterRequest request = new RegisterRequest(
-                "alice", "alice@example.com", "password123", "123-45-6789", LocalDate.of(1990, 1, 1));
+                "alice", "alice@example.com", "password123", "Alice", null, "Anderson", "123-45-6789", "1 Main St",
+                LocalDate.of(1990, 1, 1));
         when(authService.register(request)).thenThrow(new ConflictException("Username is already taken"));
 
         assertThatThrownBy(() -> authController.register(request)).isInstanceOf(ConflictException.class);

@@ -66,8 +66,8 @@ class AuthControllerTest {
 
     @Test
     void registerRejectsInvalidPayload() throws Exception {
-        RegisterRequest invalid = new RegisterRequest("ab", "not-an-email", "short", "123-45-6789",
-                LocalDate.of(1990, 1, 1));
+        RegisterRequest invalid = new RegisterRequest("ab", "not-an-email", "short", "Alice", null, "Anderson",
+                "123-45-6789", "1 Main St", LocalDate.of(1990, 1, 1));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +112,7 @@ class AuthControllerTest {
     }
 
     private RegisterRequest registerRequest(String username) {
-        return new RegisterRequest(username, username + "@example.com", "Password123!", "123-45-6789",
-                LocalDate.of(1990, 1, 1));
+        return new RegisterRequest(username, username + "@example.com", "Password123!", "Alice", null, "Anderson",
+                "123-45-6789", "1 Main St", LocalDate.of(1990, 1, 1));
     }
 }
