@@ -34,6 +34,7 @@ const SSN_PATTERN = /^\d{3}-\d{2}-\d{4}$/;
 const USERNAME_PATTERN = /^[A-Za-z0-9_]+$/;
 const MINIMUM_AVAILABLE_FUNDS = 5000;
 
+// Cross-field validator applied to the whole form since confirmPassword can't validate against a sibling control on its own.
 function passwordsMatchValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const password = control.get('password')?.value;
@@ -112,6 +113,7 @@ export class RegisterComponent {
     { validators: passwordsMatchValidator() },
   );
 
+  // Mirrors the password control as a signal so the strength checklist below updates live.
   private readonly _passwordValue = toSignal(this.form.controls.password.valueChanges, {
     initialValue: '',
   });
@@ -122,6 +124,7 @@ export class RegisterComponent {
     SPECIAL_CHARACTER_PATTERN.test(this._passwordValue()),
   );
 
+  // Auto-formats raw digit input into XXX-XX-XXXX as the user types.
   protected onSsnInput(event: Event): void {
     const digits = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 9);
     const formatted = [digits.slice(0, 3), digits.slice(3, 5), digits.slice(5, 9)]
@@ -130,12 +133,14 @@ export class RegisterComponent {
     this.form.controls.ssn.setValue(formatted);
   }
 
+  // Strips characters outside USERNAME_PATTERN as the user types, rather than only validating on submit.
   protected onUsernameInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const filtered = input.value.replace(/[^A-Za-z0-9_]/g, '');
     this.form.controls.username.setValue(filtered);
   }
 
+  // Blocks the number input's scientific-notation and sign keys ('e', '+', '-').
   protected onAvailableFundsKeydown(event: KeyboardEvent): void {
     if (['e', 'E', '+', '-'].includes(event.key)) {
       event.preventDefault();

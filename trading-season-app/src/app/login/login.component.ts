@@ -26,7 +26,9 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
+  // Toggles masking on the password field.
   protected readonly showPassword = signal(false);
+  // Tracks whether the form has been submitted, to surface validation errors.
   protected readonly submitted = signal(false);
 
   private readonly _fb = new FormBuilder();
