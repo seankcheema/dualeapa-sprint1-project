@@ -60,11 +60,8 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     user_id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username                  TEXT NOT NULL UNIQUE,
-    password_hash             TEXT NOT NULL,                   
-    first_name                TEXT NOT NULL,
-    last_name                 TEXT NOT NULL,            -- hashed, never plaintext
+    password_hash             TEXT NOT NULL,                               -- hashed, never plaintext
     email                     TEXT NOT NULL UNIQUE,
-    address                   TEXT NOT NULL,
     ssn                       TEXT NOT NULL,                                -- PII: encrypt/tokenise in real deployment
     date_of_birth             DATE NOT NULL,
     trader_level              TEXT NOT NULL DEFAULT 'BEGINNER'
