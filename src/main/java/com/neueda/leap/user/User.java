@@ -24,6 +24,15 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "middle_name")
+    private String middleName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -32,6 +41,9 @@ public class User {
 
     @Column(nullable = false)
     private String ssn;
+
+    @Column(nullable = false)
+    private String address;
 
     @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
@@ -85,6 +97,30 @@ public class User {
         this.username = username;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getMiddleName() {
+        return middleName;
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -107,6 +143,14 @@ public class User {
 
     public void setSsn(String ssn) {
         this.ssn = ssn;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public LocalDate getDateOfBirth() {

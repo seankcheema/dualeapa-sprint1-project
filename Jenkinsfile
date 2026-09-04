@@ -19,6 +19,8 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'mvn -B clean package -DskipTests'
+                // fast, DB-free unit tests only; DB-backed integration tests run in the Test stage
+                sh 'mvn -B test -Dgroups=unit'
             }
         }
         stage('Test') {
@@ -38,7 +40,7 @@ pipeline {
                         sleep 1
                     done
                 '''
-                sh 'mvn -B test || true'
+                sh 'mvn -B test -DexcludedGroups=unit || true'
             }
             post {
                 always {

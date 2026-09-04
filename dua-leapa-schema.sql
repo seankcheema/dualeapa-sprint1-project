@@ -56,6 +56,7 @@ CREATE TABLE users (
     user_id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username                  TEXT NOT NULL UNIQUE,
     first_name                TEXT NOT NULL,
+    middle_name               TEXT,
     last_name                 TEXT NOT NULL,
     password_hash             TEXT NOT NULL,                               -- hashed, never plaintext
     email                     TEXT NOT NULL UNIQUE,
