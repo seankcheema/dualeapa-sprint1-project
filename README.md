@@ -210,12 +210,14 @@ docker-compose -f infrastructure/docker-compose/docker-compose.prod.yml up -d
 | Name | Role |
 |------|------|
 | Sean Cheema | Team Lead/Front End Developer |
+
 | Chris Chang | Full Stack Engineer |
 | Soli Ateefa | Data Engineer |
-| Prisca Olose | Full Stack/Security |
+| Prisca Olose | Full Stack / Security |
 | Mohammed Shaoib | Full Stack Engineer |
 
 ---
+
 
 ## 📋 Contributing
 
@@ -290,7 +292,16 @@ See [docs/DEVELOPMENTWORKFLOW.md](docs/DEVELOPMENTWORKFLOW.md) for more troubles
 ## Project Topic
 Trading Platform
 
-## Our Architecture (As of 9/9/26)
+## Project Overview
+
+**Platform:** Trading Platform  
+**Status:** Sprint 4 
+**Last Updated:** 9/9/26
+
+
+## Project Architecture
+
+```
 dualeapa-sprint1-project/
 │
 ├── README.md                                  ← Navigation Hub
@@ -579,6 +590,12 @@ erDiagram
 
 ## Our Branching Strategy
 Our branching strategy is trunking
+
+## External Frameworks 
+SpartanNG UI - accessible, customizable components for Angular application.
+PrimeNG UI -  comprehensive UI component library specifically designed for Angular applications.
+Figma - UI design mockups and prototypes 
+Claude Design 
 
 **Last Updated:** 2026-09-09  
 **Version:** Sprint 1 (v0.1.0)
