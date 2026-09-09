@@ -4,6 +4,11 @@ pipeline {
     tools {
         maven 'Maven3'
     }
+
+    environment {
+        JAVA_HOME = '/usr/lib/jvm/java-21-amazon-corretto'
+        PATH = "${JAVA_HOME}/bin:${PATH}"
+    }
     
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
