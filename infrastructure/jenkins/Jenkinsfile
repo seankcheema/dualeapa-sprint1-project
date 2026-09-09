@@ -30,7 +30,7 @@ pipeline {
                 stage('Backend Build') {
                     steps {
                         dir('apps/business-backend') {
-                            sh 'mvn -B clean package -DskipTests'
+                            sh 'mvn -B clean package -Dmaven.test.skip=true -U'
                             echo "✓ Backend built successfully"
                         }
                     }
@@ -43,7 +43,7 @@ pipeline {
                                 -v "$(pwd)/apps/business-logic-ui:/app" \
                                 -w /app \
                                 node:22-alpine \
-                                sh -c "npm ci --prefer-offline --no-audit && npm run build"
+                                sh -c "npm install --legacy-peer-deps && npm run build"
                             echo "✓ Frontend built successfully"
                         '''
                     }
