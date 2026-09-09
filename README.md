@@ -1,19 +1,32 @@
 # Trading Season
 
-## Our Team: DuaLEAPa
+A comprehensive trading platform built with a modern tech stack featuring Angular frontends, Spring Boot services, and PostgreSQL.
+
+---
+
+## Team: DuaLEAPa
 
 | Name | Role |
-| ----- | ----- |
-| Sean Cheema | Team Lead/Front End Developer |
+|:-----|:-----|
+| Sean Cheema | Team Lead / Frontend Developer |
 | Chris Chang | Full Stack Engineer |
 | Soli Ateefa | Data Engineer |
-| Prisca Olose | Full Stack/Security |
+| Prisca Olose | Full Stack / Security |
 | Mohammed Shaoib | Full Stack Engineer |
 
-## Project Topic
-Trading Platform
+---
 
-## Our Architecture (As of 9/9/26)
+## Project Overview
+
+**Platform:** Trading Platform  
+**Status:** Sprint 1  
+**Last Updated:** 9/9/26
+
+---
+
+## Project Architecture
+
+```
 dualeapa-sprint1-project/
 │
 ├── README.md                                  ← Navigation Hub
