@@ -217,7 +217,7 @@ docker-compose -f infrastructure/docker-compose/docker-compose.prod.yml up -d
 ---
 
 
-## 📋 Contributing
+## Contributing
 
 ### Branch Strategy
 - `main` — Production-ready code
