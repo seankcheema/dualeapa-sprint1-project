@@ -24,48 +24,105 @@ pipeline {
             }
         }
 
-        stage('Build Backend') {
-            steps {
-                dir('apps/business-backend') {
-                    sh '''
-                        # Clear Maven cache for surefire to fix cached dependency failure
-                        rm -rf ~/.m2/repository/org/junit/platform ~/.m2/repository/org/apache/maven/plugins/maven-surefire-plugin
-                        # Build without tests
-                        mvn -B clean package -DskipTests -U
-                    '''
-                    echo "✓ Backend built"
+        stage('Setup Dependencies') {
+            parallel {
+                stage('Cache Maven') {
+                    steps {
+                        dir('apps/business-backend') {
+                            sh '''
+                                # Clear Maven cache for surefire to fix cached dependency failure
+                                rm -rf ~/.m2/repository/org/junit/platform ~/.m2/repository/org/apache/maven/plugins/maven-surefire-plugin
+                                # Warm up Maven cache
+                                mvn -B dependency:resolve dependency:resolve-plugins -q
+                                echo "✓ Maven dependencies cached"
+                            '''
+                        }
+                    }
+                }
+                
+                stage('Cache NPM') {
+                    steps {
+                        dir('apps/business-logic-ui') {
+                            sh '''
+                                npm install --legacy-peer-deps
+                                echo "✓ NPM dependencies cached"
+                            '''
+                        }
+                    }
                 }
             }
         }
 
-        stage('Build Frontend') {
-            steps {
-                sh '''
-                    cd apps/business-logic-ui
-                    npm install --legacy-peer-deps
-                    npm run build
-                    echo "✓ Frontend built"
-                '''
+        stage('Run Tests') {
+            parallel {
+                stage('Backend Tests') {
+                    steps {
+                        dir('apps/business-backend') {
+                            sh '''
+                                echo "🧪 Running Backend Tests (Unit + Integration)..."
+                                mvn -B clean test
+                                echo "✓ Backend tests completed"
+                            '''
+                        }
+                    }
+                }
+                
+                stage('Frontend Tests') {
+                    steps {
+                        dir('apps/business-logic-ui') {
+                            sh '''
+                                echo "🧪 Running Frontend Tests (Vitest)..."
+                                npm test -- --run --coverage
+                                echo "✓ Frontend tests completed"
+                            '''
+                        }
+                    }
+                }
             }
         }
 
-        stage('Archive') {
+        stage('Archive Test Results') {
             steps {
-                archiveArtifacts artifacts: 'apps/business-backend/target/*.jar',
+                // Archive Backend test reports
+                archiveArtifacts artifacts: 'apps/business-backend/target/surefire-reports/**/*',
                                   allowEmptyArchive: true
-                archiveArtifacts artifacts: 'apps/business-logic-ui/dist/**/*',
+                
+                // Archive Frontend coverage reports
+                archiveArtifacts artifacts: 'apps/business-logic-ui/coverage/**/*',
                                   allowEmptyArchive: true
-                echo "✓ Artifacts archived"
+                
+                echo "✓ Test reports archived"
+            }
+        }
+
+        stage('Publish Test Results') {
+            steps {
+                // Publish JUnit test results from backend
+                junit testResults: 'apps/business-backend/target/surefire-reports/**/*.xml',
+                      allowEmptyResults: true,
+                      healthScaleFactor: 1.0
+                
+                echo "✓ Test results published to Jenkins dashboard"
             }
         }
     }
     
     post {
-        success {
-            echo "✅ Build SUCCESS"
+        always {
+            // Clean up any temporary files
+            cleanWs(deleteDirs: true, patterns: [[pattern: '**/node_modules', type: 'INCLUDE']])
         }
+        
+        success {
+            echo "✅ All Tests PASSED"
+        }
+        
         failure {
-            echo "❌ Build FAILED"
+            echo "❌ Tests FAILED - Review test results in Jenkins dashboard"
+        }
+        
+        unstable {
+            echo "⚠️  Build is UNSTABLE - Some tests may have failed or timed out"
         }
     }
 }
