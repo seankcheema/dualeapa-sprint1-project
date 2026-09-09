@@ -22,6 +22,10 @@ import {
   lucideUserPlus,
   lucideX,
 } from '@ng-icons/lucide';
+import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmInputImports } from '@spartan-ng/helm/input';
 
 const SPECIAL_CHARACTER_PATTERN = /[^A-Za-z0-9]/;
 const NUMBER_PATTERN = /\d/;
@@ -46,6 +50,10 @@ function passwordsMatchValidator(): ValidatorFn {
     ReactiveFormsModule,
     RouterLink,
     NgIcon,
+    HlmNativeSelectImports,
+    HlmFieldImports,
+    HlmCardImports,
+    HlmInputImports,
   ],
   providers: [
     provideIcons({

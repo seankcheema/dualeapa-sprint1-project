@@ -12,15 +12,15 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
-      "@spartan-ng/helm/button": ["./libs/ui/button/src/index.ts"],
-      "@spartan-ng/helm/utils": ["./libs/ui/utils/src/index.ts"],
-      "@spartan-ng/helm/input": ["./libs/ui/input/src/index.ts"],
-      "@spartan-ng/helm/label": ["./libs/ui/label/src/index.ts"],
-      "@spartan-ng/helm/card": ["./libs/ui/card/src/index.ts"],
-      "@spartan-ng/helm/field": ["./libs/ui/field/src/index.ts"],
-      "@spartan-ng/helm/separator": ["./libs/ui/separator/src/index.ts"],
-      "@spartan-ng/helm/select": ["./libs/ui/select/src/index.ts"],
-      "@spartan-ng/helm/native-select": ["./libs/ui/native-select/src/index.ts"]
+      "@spartan-ng/helm/button": ["../../packages/shared-ui-components/src/lib/button/src/index.ts"],
+      "@spartan-ng/helm/utils": ["../../packages/shared-ui-components/src/lib/utils/src/index.ts"],
+      "@spartan-ng/helm/input": ["../../packages/shared-ui-components/src/lib/input/src/index.ts"],
+      "@spartan-ng/helm/label": ["../../packages/shared-ui-components/src/lib/label/src/index.ts"],
+      "@spartan-ng/helm/card": ["../../packages/shared-ui-components/src/lib/card/src/index.ts"],
+      "@spartan-ng/helm/field": ["../../packages/shared-ui-components/src/lib/field/src/index.ts"],
+      "@spartan-ng/helm/separator": ["../../packages/shared-ui-components/src/lib/separator/src/index.ts"],
+      "@spartan-ng/helm/select": ["../../packages/shared-ui-components/src/lib/select/src/index.ts"],
+      "@spartan-ng/helm/native-select": ["../../packages/shared-ui-components/src/lib/native-select/src/index.ts"]
     }
   },
   "angularCompilerOptions": {
