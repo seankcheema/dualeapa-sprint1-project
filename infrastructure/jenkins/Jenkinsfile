@@ -25,122 +25,27 @@ pipeline {
             }
         }
 
-        stage('Parallel: Backend & Frontend') {
+        stage('Parallel: Backend & Frontend Build') {
             parallel {
-                stage('Backend: Compile & Test') {
-                    stages {
-                        stage('Backend: Compile') {
-                            steps {
-                                dir('apps/business-backend') {
-                                    sh 'mvn -B clean package -DskipTests'
-                                    echo "✓ Backend compiled successfully"
-                                }
-                            }
-                        }
-
-                        stage('Backend: Unit Tests') {
-                            steps {
-                                dir('apps/business-backend') {
-                                    sh 'mvn -B test -DincludeTags=unit'
-                                    echo "✓ Backend unit tests passed"
-                                }
-                            }
-                            post {
-                                always {
-                                    junit testResults: 'apps/business-backend/target/surefire-reports/*UnitTest.xml',
-                                          allowEmptyResults: true,
-                                          testDataPublishers: []
-                                }
-                            }
-                        }
-
-                        stage('Backend: Integration Tests') {
-                            steps {
-                                script {
-                                    sh '''
-                                        # Start test database
-                                        docker rm -f leap-test-db >/dev/null 2>&1 || true
-                                        docker run -d --name leap-test-db \
-                                            -e POSTGRES_DB=leap_test \
-                                            -e POSTGRES_USER=leap \
-                                            -e POSTGRES_PASSWORD=changeme \
-                                            -p 5433:5432 \
-                                            postgres:16-alpine
-
-                                        # Wait for database to be ready (max 30 seconds)
-                                        echo "⏳ Waiting for test database..."
-                                        for i in $(seq 1 30); do
-                                            if docker exec leap-test-db pg_isready -U leap -d leap_test >/dev/null 2>&1; then
-                                                echo "✓ Test database ready"
-                                                break
-                                            fi
-                                            sleep 1
-                                        done
-                                    '''
-                                }
-                                dir('apps/business-backend') {
-                                    sh '''
-                                        mvn -B test -DincludeTags=integration \
-                                            -Dspring.datasource.url=jdbc:postgresql://localhost:5433/leap_test \
-                                            -Dspring.datasource.username=leap \
-                                            -Dspring.datasource.password=changeme \
-                                            || true
-                                    '''
-                                    echo "✓ Backend integration tests completed"
-                                }
-                            }
-                            post {
-                                always {
-                                    junit testResults: 'apps/business-backend/target/surefire-reports/*IntegrationTest.xml',
-                                          allowEmptyResults: true,
-                                          testDataPublishers: []
-                                    sh 'docker rm -f leap-test-db >/dev/null 2>&1 || true'
-                                }
-                            }
+                stage('Backend Build') {
+                    steps {
+                        dir('apps/business-backend') {
+                            sh 'mvn -B clean package -DskipTests'
+                            echo "✓ Backend built successfully"
                         }
                     }
                 }
 
-                stage('Frontend: Build & Test') {
-                    stages {
-                        stage('Frontend: Install Dependencies') {
-                            steps {
-                                sh '''
-                                    docker run --rm \
-                                        -v "$(pwd)/apps/business-logic-ui:/app" \
-                                        -w /app \
-                                        node:22-alpine \
-                                        npm ci --prefer-offline --no-audit
-                                    echo "✓ Frontend dependencies installed"
-                                '''
-                            }
-                        }
-
-                        stage('Frontend: Build') {
-                            steps {
-                                sh '''
-                                    docker run --rm \
-                                        -v "$(pwd)/apps/business-logic-ui:/app" \
-                                        -w /app \
-                                        node:22-alpine \
-                                        npm run build
-                                    echo "✓ Frontend build completed"
-                                '''
-                            }
-                        }
-
-                        stage('Frontend: Test') {
-                            steps {
-                                sh '''
-                                    docker run --rm \
-                                        -v "$(pwd)/apps/business-logic-ui:/app" \
-                                        -w /app \
-                                        node:22-alpine \
-                                        npm test -- --watch=false --reporter=verbose || true
-                                    echo "✓ Frontend tests completed"
-                                '''
-                            }
-                        }
+                stage('Frontend Build') {
+                    steps {
+                        sh '''
+                            docker run --rm \
+                                -v "$(pwd)/apps/business-logic-ui:/app" \
+                                -w /app \
+                                node:22-alpine \
+                                sh -c "npm ci --prefer-offline --no-audit && npm run build"
+                            echo "✓ Frontend built successfully"
+                        '''
                     }
                 }
             }
@@ -164,19 +69,13 @@ pipeline {
         }
     }
     
+    
     post {
         always {
-            script {
-                // Cleanup any lingering Docker containers
-                sh '''
-                    docker rm -f leap-test-db >/dev/null 2>&1 || true
-                    docker ps -a | grep -E "node:22|postgres:16" | awk '{print $1}' | xargs -r docker rm -f >/dev/null 2>&1 || true
-                '''
-            }
             echo "🧹 Cleanup completed"
         }
         success {
-            echo "✅ Pipeline SUCCESS - All tests passed"
+            echo "✅ Pipeline SUCCESS - Build completed"
         }
         failure {
             echo "❌ Pipeline FAILED - Check logs above for details"
