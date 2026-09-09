@@ -66,24 +66,25 @@ pipeline {
         }
         stage('Angular Install') {
             steps {
-                // Clean install dependencies
-                // Note: Requires Node.js 22 installed on Jenkins server
-                sh 'npm ci'
-                sh 'cd apps/business-logic-ui && npm ci'
+                // Use Docker to install dependencies (handles platform consistency)
+                // Delete node_modules first to avoid cross-platform cached binaries
+                sh 'rm -rf node_modules apps/business-logic-ui/node_modules'
+                
+                // Install workspace dependencies
+                sh 'docker run --rm -v "$(pwd):/workspace" -w /workspace node:22 npm ci'
+                
+                // Install app-specific dependencies
+                sh 'docker run --rm -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22 npm ci'
             }
         }
         stage('Angular Build') {
             steps {
-                dir('apps/business-logic-ui') {
-                    sh 'npm run build'
-                }
+                sh 'docker run --rm -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22 npm run build'
             }
         }
         stage('Angular Test') {
             steps {
-                dir('apps/business-logic-ui') {
-                    sh 'npm test -- --watch=false || true'
-                }
+                sh 'docker run --rm -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22 npm test -- --watch=false || true'
             }
         }
         stage('Docker Build (Multistage)') {
