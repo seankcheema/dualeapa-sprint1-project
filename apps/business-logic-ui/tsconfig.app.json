@@ -3,6 +3,9 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "libs/ui/**/src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../../packages/shared-ui-components/src/lib/**/src/**/*.ts"
+  ],
   "exclude": ["src/**/*.spec.ts"]
 }

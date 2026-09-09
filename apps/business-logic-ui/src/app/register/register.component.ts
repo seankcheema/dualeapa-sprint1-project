@@ -22,10 +22,10 @@ import {
   lucideUserPlus,
   lucideX,
 } from '@ng-icons/lucide';
-import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
-import { HlmFieldImports } from '@spartan-ng/helm/field';
-import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmNativeSelectImports } from '@shared/ui-components/native-select';
+import { HlmFieldImports } from '@shared/ui-components/field';
+import { HlmCardImports } from '@shared/ui-components/card';
+import { HlmInputImports } from '@shared/ui-components/input';
 
 const SPECIAL_CHARACTER_PATTERN = /[^A-Za-z0-9]/;
 const NUMBER_PATTERN = /\d/;

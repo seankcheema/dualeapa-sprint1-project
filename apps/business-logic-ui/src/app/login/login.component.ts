@@ -3,9 +3,9 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEye, lucideEyeOff, lucideLock, lucideLogIn, lucideMail } from '@ng-icons/lucide';
-import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmFieldImports } from '@spartan-ng/helm/field';
-import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmCardImports } from '@shared/ui-components/card';
+import { HlmFieldImports } from '@shared/ui-components/field';
+import { HlmInputImports } from '@shared/ui-components/input';
 
 @Component({
   selector: 'app-login',
