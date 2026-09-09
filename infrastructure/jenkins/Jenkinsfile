@@ -66,10 +66,13 @@ pipeline {
         }
         stage('Angular Install') {
             steps {
-                // Install root workspace dependencies (includes business-logic-ui)
-                // Uses Docker since Node.js may not be on Jenkins server
                 sh '''
-                    docker run --rm -v "$(pwd):/workspace" -w /workspace node:22 npm ci --prefer-offline --no-audit
+                    # Delete lock file and node_modules to force fresh install for Linux platform
+                    rm -f package-lock.json
+                    rm -rf node_modules apps/business-logic-ui/node_modules
+                    
+                    # Install fresh - npm will rebuild all native modules for Linux
+                    docker run --rm -v "$(pwd):/workspace" -w /workspace node:22 npm install --no-audit
                 '''
             }
         }

@@ -1,10 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700&display=swap');
-@layer theme, base, components, utilities;
-@import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/preflight.css' layer(base);
-@import 'tailwindcss/utilities.css';
 
+/* Tailwind CSS v3 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SpartanNG preset */
 @import '@spartan-ng/brain/hlm-tailwind-preset.css';
+
 /* You can add global styles to this file, and also import other style files */
 
 * {
