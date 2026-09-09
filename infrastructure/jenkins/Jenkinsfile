@@ -97,6 +97,17 @@ pipeline {
                 sh 'docker-compose down'
             }
         }
+        stage('Debug - Manual Build Test') {
+            when {
+                expression { env.RUN_DEBUG == 'true' }
+            }
+            steps {
+                sh '''
+                    cd /home/ec2-user/dualeapa-sprint1-project
+                    cd apps/business-backend && mvn clean package
+                '''
+            }
+        }
     }
     
     post {
