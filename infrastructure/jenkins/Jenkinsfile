@@ -25,12 +25,25 @@ pipeline {
             }
         }
 
+        stage('Install Monorepo Dependencies') {
+            steps {
+                sh '''
+                    docker run --rm \
+                        -v "$(pwd):/workspace" \
+                        -w /workspace \
+                        node:22-alpine \
+                        npm install --legacy-peer-deps
+                    echo "✓ Monorepo dependencies installed"
+                '''
+            }
+        }
+
         stage('Parallel: Backend & Frontend Build') {
             parallel {
                 stage('Backend Build') {
                     steps {
                         dir('apps/business-backend') {
-                            sh 'mvn -B clean package -Dmaven.test.skip=true -U'
+                            sh 'mvn -B clean compile jar:jar'
                             echo "✓ Backend built successfully"
                         }
                     }
@@ -40,10 +53,10 @@ pipeline {
                     steps {
                         sh '''
                             docker run --rm \
-                                -v "$(pwd)/apps/business-logic-ui:/app" \
-                                -w /app \
+                                -v "$(pwd):/workspace" \
+                                -w /workspace \
                                 node:22-alpine \
-                                sh -c "npm install --legacy-peer-deps && npm run build"
+                                npm run build
                             echo "✓ Frontend built successfully"
                         '''
                     }
