@@ -27,7 +27,12 @@ pipeline {
         stage('Build Backend') {
             steps {
                 dir('apps/business-backend') {
-                    sh 'mvn -B clean package -DskipTests'
+                    sh '''
+                        # Clear Maven cache for surefire to fix cached dependency failure
+                        rm -rf ~/.m2/repository/org/junit/platform ~/.m2/repository/org/apache/maven/plugins/maven-surefire-plugin
+                        # Build without tests
+                        mvn -B clean package -DskipTests -U
+                    '''
                     echo "✓ Backend built"
                 }
             }
