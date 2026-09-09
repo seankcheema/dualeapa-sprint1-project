@@ -128,6 +128,24 @@ server {
 8. **Deploy** — Deploy using docker-compose
 9. **Smoke Tests** — Verify deployment
 
+## Trouble Shoot Maven 21:
+cd /home/ec2-user/dualeapa-sprint1-project/apps/business-backend
+
+**Clear Maven cache**
+rm -rf ~/.m2/repository
+
+**Export JAVA_HOME to be sure**
+export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
+export PATH=$JAVA_HOME/bin:$PATH
+
+**Verify Maven sees Java 21**
+mvn -version
+
+**Try the build again**
+mvn clean package
+
+---
+
 ### Running Pipeline
 
 ```groovy
