@@ -3,10 +3,6 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEye, lucideEyeOff, lucideLock, lucideLogIn, lucideMail } from '@ng-icons/lucide';
-import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmFieldImports } from '@spartan-ng/helm/field';
-import { HlmInputImports } from '@spartan-ng/helm/input';
-import { HlmButtonImports } from '@spartan-ng/helm/button';
 
 @Component({
   selector: 'app-login',
@@ -16,10 +12,6 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
     ReactiveFormsModule,
     RouterLink,
     NgIcon,
-    ...HlmCardImports,
-    ...HlmFieldImports,
-    ...HlmInputImports,
-    ...HlmButtonImports,
   ],
   providers: [provideIcons({ lucideMail, lucideLock, lucideEye, lucideEyeOff, lucideLogIn })],
   templateUrl: './login.component.html',
@@ -39,7 +31,7 @@ export class LoginComponent {
   });
 
   protected togglePasswordVisibility(): void {
-    this.showPassword.update((value) => !value);
+    this.showPassword.update((value: boolean) => !value);
   }
 
   protected onSubmit(): void {
