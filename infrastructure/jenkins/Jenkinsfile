@@ -8,7 +8,6 @@ pipeline {
     environment {
         JAVA_HOME = '/usr/lib/jvm/java-21-amazon-corretto'
         PATH = "${JAVA_HOME}/bin:${PATH}"
-        DOCKER_BUILDKIT = '1'
     }
     
     options {
@@ -25,76 +24,43 @@ pipeline {
             }
         }
 
-        stage('Install Monorepo Dependencies') {
+        stage('Build Backend') {
+            steps {
+                dir('apps/business-backend') {
+                    sh 'mvn -B clean package -DskipTests'
+                    echo "✓ Backend built"
+                }
+            }
+        }
+
+        stage('Build Frontend') {
             steps {
                 sh '''
-                    docker run --rm \
-                        -v "$(pwd):/workspace" \
-                        -w /workspace \
-                        node:22-alpine \
-                        sh -c "rm -rf node_modules apps/*/node_modules packages/*/node_modules && npm install --legacy-peer-deps"
-                    echo "✓ Monorepo dependencies installed"
+                    cd apps/business-logic-ui
+                    npm install --legacy-peer-deps
+                    npm run build
+                    echo "✓ Frontend built"
                 '''
             }
         }
 
-        stage('Parallel: Backend & Frontend Build') {
-            parallel {
-                stage('Backend Build') {
-                    steps {
-                        dir('apps/business-backend') {
-                            sh 'mvn -B clean package -DskipTests -T 1C'
-                            echo "✓ Backend built successfully"
-                        }
-                    }
-                }
-
-                stage('Frontend Build') {
-                    steps {
-                        sh '''
-                            docker run --rm \
-                                -v "$(pwd):/workspace" \
-                                -w /workspace \
-                                node:22-alpine \
-                                npm run build
-                            echo "✓ Frontend built successfully"
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Archive Artifacts') {
+        stage('Archive') {
             steps {
-                script {
-                    echo "📦 Archiving build artifacts..."
-                    sh 'ls -la apps/business-backend/target/*.jar || true'
-                    sh 'ls -la apps/business-logic-ui/dist/ || true'
-                    
-                    archiveArtifacts artifacts: 'apps/business-backend/target/*.jar',
-                                      allowEmptyArchive: true,
-                                      fingerprint: true
-
-                    archiveArtifacts artifacts: 'apps/business-logic-ui/dist/**/*',
-                                      allowEmptyArchive: true,
-                                      fingerprint: true
-
-                    echo "✓ Artifacts archived"
-                }
+                archiveArtifacts artifacts: 'apps/business-backend/target/*.jar',
+                                  allowEmptyArchive: true
+                archiveArtifacts artifacts: 'apps/business-logic-ui/dist/**/*',
+                                  allowEmptyArchive: true
+                echo "✓ Artifacts archived"
             }
         }
     }
     
-    
     post {
-        always {
-            echo "🧹 Cleanup completed"
-        }
         success {
-            echo "✅ Pipeline SUCCESS - Build completed"
+            echo "✅ Build SUCCESS"
         }
         failure {
-            echo "❌ Pipeline FAILED - Check logs above for details"
+            echo "❌ Build FAILED"
         }
     }
 }
