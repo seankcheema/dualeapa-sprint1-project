@@ -18,9 +18,11 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh 'mvn -B clean package -DskipTests'
-                // fast, DB-free unit tests only; DB-backed integration tests run in the Test stage
-                sh 'mvn -B test -Dgroups=unit'
+                dir('apps/business-backend') {
+                    sh 'mvn -B clean package -DskipTests'
+                    // fast, DB-free unit tests only; DB-backed integration tests run in the Test stage
+                    sh 'mvn -B test -Dgroups=unit'
+                }
             }
         }
         stage('Test') {
@@ -28,51 +30,53 @@ pipeline {
                 sh '''
                     docker rm -f test-db >/dev/null 2>&1 || true
                     docker run -d --name test-db \
-                        -e POSTGRES_DB=paysprint_test \
-                        -e POSTGRES_USER=paysprint \
+                        -e POSTGRES_DB=leap_test \
+                        -e POSTGRES_USER=leap \
                         -e POSTGRES_PASSWORD=changeme \
                         -p 5432:5432 \
-                        -v "$WORKSPACE/dua-leapa-schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro" \
+                        -v "$WORKSPACE/apps/business-backend/db/init.sql:/docker-entrypoint-initdb.d/schema.sql:ro" \
                         postgres:16-alpine
 
                     for i in $(seq 1 30); do
-                        docker exec test-db pg_isready -U paysprint -d paysprint_test >/dev/null 2>&1 && break
+                        docker exec test-db pg_isready -U leap -d leap_test >/dev/null 2>&1 && break
                         sleep 1
                     done
                 '''
-                sh 'mvn -B test -DexcludedGroups=unit || true'
+                dir('apps/business-backend') {
+                    sh 'mvn -B test -DexcludedGroups=unit || true'
+                }
             }
             post {
                 always {
                     sh 'docker rm -f test-db >/dev/null 2>&1 || true'
-                    junit testResults: 'target/surefire-reports/*.xml', 
+                    junit testResults: 'apps/business-backend/target/surefire-reports/*.xml', 
                           allowEmptyResults: true
                 }
             }
         }
         stage('Archive') {
             steps {
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                archiveArtifacts artifacts: 'apps/business-backend/target/*.jar', fingerprint: true
             }
         }
         stage('Angular Install') {
             steps {
                 // Agent has no Node.js installed, so run npm/ng inside an ephemeral node container instead.
-                dir('trading-season-app') {
+                dir('apps/business-logic-ui') {
                     sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/app" -w /app node:22-alpine npm ci'
                 }
             }
         }
         stage('Angular Build') {
             steps {
-                dir('trading-season-app') {
+                dir('apps/business-logic-ui') {
                     sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/app" -w /app node:22-alpine npx ng build --configuration production'
                 }
             }
         }
         stage('Angular Test') {
             steps {
-                dir('trading-season-app') {
+                dir('apps/business-logic-ui') {
                     sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/app" -w /app node:22-alpine npx ng test --watch=false || true'
                 }
             }
