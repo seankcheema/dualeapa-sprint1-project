@@ -1,111 +1,26 @@
-# Trading Season
+# Dua LEAPa — Database Visualization
 
-## Our Team: DuaLEAPa
+Companion diagram for [dua-leapa-schema.sql](./dua-leapa-schema.sql). Shows every
+table, its columns, key attributes, and how tables relate.
 
-| Name | Role |
-| ----- | ----- |
-| Sean Cheema | Team Lead/Front End Developer |
-| Chris Chang | Full Stack Engineer |
-| Soli Ateefa | Data Engineer |
-| Prisca Olose | Full Stack/Security |
-| Mohammed Shaoib | Full Stack Engineer |
+## Legend — column attributes
 
-## Project Topic
-Trading Platform
+| Tag | Meaning |
+|---|---|
+| `PK` | Primary key |
+| `FK` | Foreign key (references another table) |
+| `UK` | Unique constraint |
+| *(no tag)* | Plain column, not unique/keyed |
 
-## Our Architecture (As of 9/9/26)
-dualeapa-sprint1-project/
-│
-├── README.md                                  ← Navigation Hub
-├── .agent.md                                  ← AI Guidance
-│
-├── apps/                                      ← Deployable Applications
-│   │
-│   ├── business-logic-ui/                     ← Angular 22.1 Business UI
-│   │   ├── README.md
-│   │   ├── .agent.md
-│   │   ├── package.json
-│   │   ├── angular.json
-│   │   ├── src/
-│   │   └── Dockerfile
-│   │
-│   ├── reporting-ui/                          ← Angular 22.1 Reporting UI
-│   │   ├── README.md
-│   │   ├── .agent.md
-│   │   ├── package.json
-│   │   ├── angular.json
-│   │   ├── src/
-│   │   └── Dockerfile
-│   │
-│   ├── business-backend/                      ← Spring Boot API + Database
-│   │   ├── README.md
-│   │   ├── .agent.md
-│   │   ├── pom.xml
-│   │   ├── src/
-│   │   ├── db/
-│   │   │   └── migrations/                    ← Flyway (V001, V002, V003...)
-│   │   └── Dockerfile
-│   │
-│   ├── reporting-service/                     ← Spring Boot Reporting Service
-│   │   ├── README.md
-│   │   ├── .agent.md
-│   │   ├── pom.xml
-│   │   ├── src/
-│   │   └── Dockerfile
-│   │
-│   └── auth-service/                          ← Next.js Authentication Service
-│       ├── README.md
-│       ├── .agent.md
-│       ├── src/
-│       │   └── app/api/auth/
-│       │       ├── login/
-│       │       ├── register/
-│       │       ├── refresh/
-│       │       └── verify/
-│       └── Dockerfile
-│
-├── packages/                                  ← Shared Libraries
-│   │
-│   ├── shared-ui-components/                  ← Reusable Angular Components
-│   └── api-contracts/                         ← OpenAPI Schemas & DTOs
-│
-├── scripts/                                   ← Python Analytics & Backtesting
-│   ├── README.md
-│   ├── .agent.md
-│   ├── requirements.txt
-│   ├── backtesting/
-│   │   └── run_backtest.py + strategies
-│   └── analytics/
-│       └── report_generator.py
-│
-├── infrastructure/                            ← DevOps & Deployment
-│   ├── README.md
-│   ├── .agent.md
-│   ├── docker/
-│   ├── docker-compose/
-│   │   ├── docker-compose.local.yml
-│   │   └── docker-compose.prod.yml
-│   ├── nginx/
-│   └── jenkins/
-│       ├── Jenkinsfile
-│       └── pipeline-scripts/
-│
-├── docs/                                      ← Centralized Documentation
-│   ├── ARCHITECTURE.md
-│   ├── API_REFERENCE.md
-│   ├── DATABASE.md
-│   ├── DEVELOPMENT_WORKFLOW.md
-│   ├── DEPLOYMENT.md
-│   └── JAVA_DOCS.md
-│
-├── .github/
-│   └── workflows/                             ← GitHub Actions
-│
-├── package.json                               ← Monorepo Configuration
-└── turbo.json                                 ← Turborepo Task Runner
+| Sensitivity label (in quotes) | Meaning |
+|---|---|
+| `"PII"` | Personally identifiable — must be encrypted/tokenised, never logged or returned as-is |
+| `"secret"` | Credential/token material — never expose via API or logs |
+| `"internal"` | System/derived state — not user-facing, but not sensitive |
+| `"financial"` | Money or position data — read-access should be scoped to the owning user/admin only |
+| *(no label)* | Public-safe — ok to expose to the owning user or in normal API responses |
 
-
-## Our Entity-Relationships (ER) Diagram
+## Entity-relationship diagram
 
 ```mermaid
 erDiagram
@@ -300,11 +215,10 @@ erDiagram
     }
 ```
 
-## Our Branching Strategy
-Our branching strategy is trunking
+## Table groups, at a glance
 
-## External Frameworks 
-SpartanNG UI - accessible, customizable components for Angular application.
-PrimeNG UI -  comprehensive UI component library specifically designed for Angular applications.
-Figma - UI design mockups and prototypes 
-Claude Design 
+- **Identity & access**: `users`, `sessions` — who can log in, and which sessions are live.
+- **Reference data**: `instruments`, `stocks` — what can be traded.
+- **Market data (FMS-fed)**: `price_points` (live today), `market_ticks`, `quotes`, `candles`, `market_state` (reserved for later FMS phases, empty for now).
+- **Money & positions**: `accounts`, `holdings` — current-state caches.
+- **Trading pipeline**: `orders` → `fills` → `cash_transactions` + `holding_movements` (the ledgers) → `audit_trail` (permanent record).
