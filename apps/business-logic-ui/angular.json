@@ -65,10 +65,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "trading-season-app:build:production"
+              "buildTarget": "business-logic-ui:build:production"
             },
             "development": {
-              "buildTarget": "trading-season-app:build:development"
+              "buildTarget": "business-logic-ui:build:development"
             }
           },
           "defaultConfiguration": "development"

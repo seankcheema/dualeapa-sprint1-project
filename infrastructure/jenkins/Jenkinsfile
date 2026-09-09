@@ -43,7 +43,7 @@ pipeline {
                 stage('Backend Build') {
                     steps {
                         dir('apps/business-backend') {
-                            sh 'mvn -B clean package -DskipTests=true -T 1C'
+                            sh 'mvn -B clean package -DskipTests -T 1C'
                             echo "✓ Backend built successfully"
                         }
                     }
