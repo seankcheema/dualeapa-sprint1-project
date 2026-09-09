@@ -21,22 +21,23 @@ services:
     networks:
       - dev-network
 
-  # Optional: Add backend service for integration testing
-  backend:
-    build:
-      context: ../../apps/business-backend
-      dockerfile: Dockerfile
-    container_name: backend-service
-    ports:
-      - "8081:8081"
-    depends_on:
-      - db
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/paysprint
-      SPRING_DATASOURCE_USERNAME: paysprint
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
-    networks:
-      - dev-network
+  # Note: Backend service is built by the Jenkinsfile during pipeline execution
+  # Uncomment below if you want to run backend locally during development
+  # backend:
+  #   build:
+  #     context: ../../apps/business-backend
+  #     dockerfile: Dockerfile
+  #   container_name: backend-service
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/paysprint
+  #     SPRING_DATASOURCE_USERNAME: paysprint
+  #     SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
+  #   networks:
+  #     - dev-network
 
   db:
     image: postgres:16-alpine
