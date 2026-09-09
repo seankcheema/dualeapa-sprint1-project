@@ -28,10 +28,12 @@ pipeline {
             steps {
                 dir('apps/business-backend') {
                     sh '''
-                        # Clear Maven cache for surefire to fix cached dependency failure
+                        # Aggressive Maven cache cleanup to avoid dependency resolution issues
+                        echo "🧹 Clearing Maven cache..."
                         rm -rf ~/.m2/repository/org/junit/platform ~/.m2/repository/org/apache/maven/plugins/maven-surefire-plugin
-                        # Warm up Maven cache
-                        mvn -B dependency:resolve dependency:resolve-plugins -q
+                        rm -rf ~/.m2/repository/org/junit
+                        # Warm up Maven cache with fresh dependencies
+                        mvn -B dependency:resolve dependency:resolve-plugins -U
                         echo "✓ Maven dependencies cached"
                     '''
                 }
