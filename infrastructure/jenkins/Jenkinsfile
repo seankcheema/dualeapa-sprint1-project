@@ -67,20 +67,20 @@ pipeline {
         stage('Angular Install') {
             steps {
                 // Install workspace dependencies from root to enable path alias resolution
-                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace node:22-alpine npm ci'
+                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace node:22 npm ci'
                 
                 // Install app-specific dependencies
-                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22-alpine npm ci'
+                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22 npm ci'
             }
         }
         stage('Angular Build') {
             steps {
-                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22-alpine npx ng build --configuration production'
+                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22 npx ng build --configuration production'
             }
         }
         stage('Angular Test') {
             steps {
-                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22-alpine npx ng test --watch=false || true'
+                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22 npx ng test --watch=false || true'
             }
         }
         stage('Docker Build (Multistage)') {
