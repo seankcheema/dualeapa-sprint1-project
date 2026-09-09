@@ -3,11 +3,13 @@ FROM jenkins/jenkins:lts-jdk21
 # Run as root to install dependencies
 USER root
 
-# Install Node.js 20.x and npm
-RUN curl -sL https://rpm.nodesource.com/setup_20.x | bash - && \
-    yum install -y nodejs && \
-    yum clean all && \
-    rm -rf /var/cache/yum/*
+# Update package manager and install Node.js 20.x
+RUN apt-get update && \
+    apt-get install -y curl gnupg && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # Verify installations
 RUN node --version && npm --version && java -version
