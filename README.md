@@ -84,6 +84,7 @@ Complete reference for the entire platform.
 | **APIREFERENCE.md** | REST API endpoints, authentication, examples |
 | **DEVELOPMENTWORKFLOW.md** | Local setup, running services, debugging |
 | **DEPLOYMENT.md** | CI/CD, Docker, production setup, secrets management |
+| **TEST_SUMMARY.md** | Test suite overview, coverage, running tests locally |
 | **JAVA_DOCS.md** | Generated Javadoc reference |
 
 ### **`.github/workflows/`** — GitHub Actions
@@ -157,6 +158,7 @@ docker-compose -f infrastructure/docker-compose/docker-compose.prod.yml up -d
 | REST API endpoints & authentication | [docs/APIREFERENCE.md](docs/APIREFERENCE.md) |
 | Local development setup & troubleshooting | [docs/DEVELOPMENTWORKFLOW.md](docs/DEVELOPMENTWORKFLOW.md) |
 | Production deployment & CI/CD | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
+| Test suite, running tests, coverage | [docs/TEST_SUMMARY.md](docs/TEST_SUMMARY.md) |
 | Generated Java API documentation | [docs/JAVA_DOCS.md](docs/JAVA_DOCS.md) |
 
 ---
