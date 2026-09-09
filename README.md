@@ -1,8 +1,7 @@
-# DuaLEAPa Sprint 1 - Trading Simulation Platform
+# DuaLEAPa - Trading Simulation Platform
 
-Welcome to the **DuaLEAPa Sprint 1** monorepo! This is a full-stack trading simulation platform built with Angular, Spring Boot, PostgreSQL, and Docker.
+Welcome to the **DuaLEAPa** ! This is a full-stack trading simulation platform built with Angular, Spring Boot, PostgreSQL, and Docker.
 
-## 🚀 Quick Start
 
 ### Prerequisites
 - **Node.js 22.x** (for Angular frontend)
@@ -35,7 +34,7 @@ npm run dev
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ### **`apps/`** — Deployable Applications
 Each app is independently deployable and has its own `README.md` and `.agent.md`.
@@ -92,7 +91,7 @@ CI/CD pipelines (GitHub Actions).
 
 ---
 
-## 🛠️ Development Workflow
+## Development Workflow
 
 ### 1. **Set Up Local Environment**
 See [docs/DEVELOPMENTWORKFLOW.md](docs/DEVELOPMENTWORKFLOW.md) for detailed setup.
@@ -149,7 +148,7 @@ docker-compose -f infrastructure/docker-compose/docker-compose.prod.yml up -d
 
 ---
 
-## 📚 Documentation Guide
+## Documentation Guide
 
 | Need | See |
 |------|-----|
@@ -163,7 +162,7 @@ docker-compose -f infrastructure/docker-compose/docker-compose.prod.yml up -d
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -193,7 +192,7 @@ docker-compose -f infrastructure/docker-compose/docker-compose.prod.yml up -d
 
 ---
 
-## 🔐 Technology Stack
+## Technology Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -205,12 +204,11 @@ docker-compose -f infrastructure/docker-compose/docker-compose.prod.yml up -d
 
 ---
 
-## 👥 Team
+## Team
 
 | Name | Role |
 |------|------|
 | Sean Cheema | Team Lead/Front End Developer |
-
 | Chris Chang | Full Stack Engineer |
 | Soli Ateefa | Data Engineer |
 | Prisca Olose | Full Stack / Security |
@@ -232,7 +230,7 @@ Follow conventional commits:
 ```
 feat: Add login form validation
 fix: Correct order processing logic
-docs: Update database schema
+docs: Update database schema and general documentation
 test: Add unit tests for AuthService
 ```
 
@@ -252,7 +250,7 @@ test: Add unit tests for AuthService
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Backend won't start
 - Check Java 21 is installed: `java -version`
@@ -274,19 +272,13 @@ See [docs/DEVELOPMENTWORKFLOW.md](docs/DEVELOPMENTWORKFLOW.md) for more troubles
 
 ---
 
-## 📞 Support & Questions
+## Support & Questions
 
 - **Architecture Questions:** See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - **Database Questions:** See [docs/DATABASE.md](docs/DATABASE.md)
 - **API Questions:** See [docs/APIREFERENCE.md](docs/APIREFERENCE.md)
 - **Development Setup:** See [docs/DEVELOPMENTWORKFLOW.md](docs/DEVELOPMENTWORKFLOW.md)
 - **Deployment:** See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
-
----
-
-## 📄 License
-
-[Add your license here]
 
 ---
 ## Project Topic
@@ -392,6 +384,7 @@ dualeapa-sprint1-project/
 ├── package.json                               ← Monorepo Configuration
 └── turbo.json                                 ← Turborepo Task Runner
 
+```
 
 ## Our Entity-Relationships (ER) Diagram
 
@@ -598,4 +591,4 @@ Figma - UI design mockups and prototypes
 Claude Design 
 
 **Last Updated:** 2026-09-09  
-**Version:** Sprint 1 (v0.1.0)
+**Version:** 1 (v0.1.0)
