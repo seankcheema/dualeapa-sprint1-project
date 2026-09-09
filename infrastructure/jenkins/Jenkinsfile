@@ -69,8 +69,14 @@ pipeline {
                 // Install workspace dependencies from root to enable path alias resolution
                 sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace node:22 npm ci'
                 
+                // Rebuild native modules for current Docker platform (fixes lightningcss platform mismatch)
+                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace node:22 npm rebuild'
+                
                 // Install app-specific dependencies
                 sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22 npm ci'
+                
+                // Rebuild native modules for app context
+                sh 'docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$(pwd):/workspace" -w /workspace/apps/business-logic-ui node:22 npm rebuild'
             }
         }
         stage('Angular Build') {
