@@ -118,8 +118,9 @@ dualeapa-sprint1-project/
 └── turbo.json                                 ← Turborepo Task Runner
 
 
-## Our Entity-Relationships (ER) Diagram
 
+
+## Our Entity-Relationships (ER) Diagram
 ```mermaid
 erDiagram
     USERS ||--o{ SESSIONS : "has"
@@ -139,7 +140,7 @@ erDiagram
     INSTRUMENTS ||--o{ HOLDING_MOVEMENTS : "moves"
     ORDERS ||--o| FILLS : "executes as"
     ORDERS ||--o{ AUDIT_TRAIL : "logs"
-    FILLS ||--o| CASH_TRANSACTIONS : "produces"
+    FILLS ||--|| CASH_TRANSACTIONS : "produces"
     FILLS ||--|| HOLDING_MOVEMENTS : "produces"
 
     USERS {
