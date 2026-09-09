@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.jenkins
     container_name: jenkins-with-nodejs
     ports:
-      - "8080:8080"
+      - "8888:8080"
       - "50000:50000"
     volumes:
       # Persist Jenkins data across container restarts
