@@ -1,13 +1,12 @@
 {
-  "name": "trading-season-app",
+  "name": "business-logic-ui",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:trading-season-app": "node dist/trading-season-app/server/server.mjs"
+    "test": "ng test"
   },
   "private": true,
   "packageManager": "npm@11.16.0",

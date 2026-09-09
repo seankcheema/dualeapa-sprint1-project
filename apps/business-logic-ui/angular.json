@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "trading-season-app": {
+    "business-logic-ui": {
       "projectType": "application",
       "schematics": {},
       "root": "",

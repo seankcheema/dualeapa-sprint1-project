@@ -32,7 +32,7 @@ pipeline {
                         -v "$(pwd):/workspace" \
                         -w /workspace \
                         node:22-alpine \
-                        npm install --legacy-peer-deps
+                        sh -c "rm -rf node_modules apps/*/node_modules packages/*/node_modules && npm install --legacy-peer-deps"
                     echo "✓ Monorepo dependencies installed"
                 '''
             }
@@ -43,7 +43,7 @@ pipeline {
                 stage('Backend Build') {
                     steps {
                         dir('apps/business-backend') {
-                            sh 'mvn -B clean compile jar:jar'
+                            sh 'mvn -B clean package -DskipTests=true -T 1C'
                             echo "✓ Backend built successfully"
                         }
                     }
@@ -68,7 +68,10 @@ pipeline {
             steps {
                 script {
                     echo "📦 Archiving build artifacts..."
-                    archiveArtifacts artifacts: 'apps/business-backend/target/sprint1-greeter-app.jar',
+                    sh 'ls -la apps/business-backend/target/*.jar || true'
+                    sh 'ls -la apps/business-logic-ui/dist/ || true'
+                    
+                    archiveArtifacts artifacts: 'apps/business-backend/target/*.jar',
                                       allowEmptyArchive: true,
                                       fingerprint: true
 
